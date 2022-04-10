@@ -1,0 +1,54 @@
+
+Creation of project     :[composer create-project laravel/laravel:^8.0 laravel8_yt]
+Creation of model       :[php artisan make:model model-name]
+Creation of controller  :[php artisan make:controller controller-name -r]
+Creation of Migration   :[php artisan make:migration a-name]
+How to migrate          :[php artisan migrate]
+
+Reading table & passing data:
+                         $students=students::all();     #by model                    #reading table and keeping in $students.students is table name
+                         return view('home',['students'=>$students]);       #redirecting to home page with table value
+
+Recieving table data and printing:
+                         @foreach($students as $stu)
+                <tr>
+                    <td>{{$stu->id}}</td>   
+                    <td>{{$stu->Name}}</td>   
+                    <td>{{$stu->City}}</td>   
+                    <td>{{$stu->Marks}}</td>   
+                </tr>   
+                @endforeach 
+
+
+
+Session system:
+                    @if(session()->has('status'))
+                   <div>
+                      {{session('status')}}   
+                   </div>
+                   @endif
+
+
+Angchor tag redirect in blade with parameter:
+                     <a  href="{{url('/editform',$stu->id)}}">#</a>   
+                     
+
+                    
+Form system in blade:
+                     <form action="" method="POST">
+                      @csrf
+                      <button type="submit">Submit</button>
+                     </form> 
+
+                     for edit form:
+
+                        <form action="" method="POST">
+                       @csrf
+                      @method('PUT')
+                      <button type="submit">Submit</button>
+                     </form> 
+
+Route in web.php structure:
+                      Route::get('/delete/{id}',[studentcontroller::class,'destroy'])->name('destroy');
+
+           }                                        

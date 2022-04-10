@@ -1,0 +1,43 @@
+
+Some Important controllers by model:
+
+                Reading and redirect:
+                                    public function index()
+                                    {
+                                           $students=students::all();
+                                          return view('home',['students'=>$students]);
+                                    }
+
+                Inserting and redirect with session:                    
+                                                    public function create(Request $request)
+                                                   {
+                                                         $student = new students;
+                                                         $student->Name=$request->name;
+                                                         $student->City=$request->city;
+                                                         $student->Marks=$request->marks;
+                                                         $student->save();
+                                                         return redirect(route('index'))->with('status','Data Created!!');
+                                                   }
+                Reading a row for edit:                    
+                                        public function edit($id)
+                                       {
+                                            $student=students::find($id);
+                                            return view('editform',['stu'=>$student]);
+                                       }
+
+                 Updating that row and redirect:
+                                      public function update(Request $request, $id)
+                                           {
+                                               $student=students::find($id);
+                                               $student->Name=$request->name;
+                                               $student->City=$request->city;
+                                               $student->Marks=$request->marks;
+                                               $student->save();
+                                               return redirect(route('index'))->with('status','Data Updated!!');
+                                           }       
+                   Deleting a row and redirecing:
+                                                public function destroy($id)
+                                                   {
+                                                      $student=students::destroy($id);
+                                                      return redirect(route('index'))->with('status','Data Deleted!!');
+                                        

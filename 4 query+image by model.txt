@@ -1,0 +1,107 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Student;
+use Illuminate\Support\Facades\File;
+
+use Illuminate\Http\Request;
+
+class StudentController extends Controller
+{
+
+    public function index()
+    {
+        $students=Student::all();
+        return view('students.index',['students'=>$students]);
+    }
+
+    public function add_student()
+    {
+        return view('students.add-student');
+    }
+
+
+    public function create(Request $request)
+    {
+        $student=new Student;
+        $student->Name=$request->name;
+        $student->Course=$request->course;
+
+        if($request->hasfile('image'))
+        {
+            $file=$request->file('image');
+            $extention=$file->getClientOriginalExtension();
+            $filename=time().'.'.$extention;
+            $file->move('uploads/students',$filename);
+            $student->Image=$filename;
+        }
+        $student->save();
+        return redirect()->back()->with('status','Student Added!!');
+    }
+
+
+    public function update(Request $request, $id)
+    {
+        $student=Student::find($id);
+        $student->Name=$request->name;
+        $student->Course=$request->course;
+
+        if($request->hasfile('image'))
+        {
+            $old_image='uploads/students/'.$student->Image;
+            if(File::exists($old_image))
+            {
+                File::delete($old_image);
+            }
+
+            $file=$request->file('image');
+            $extention=$file->getClientOriginalExtension();
+            $filename=time().'.'.$extention;
+            $file->move('uploads/students',$filename);
+            $student->Image=$filename;
+        }
+        $student->save();
+        return redirect(route('index'))->with('status','Student Updated!!');
+    }
+
+
+    public function edit_read($id)
+    {
+        $student=Student::find($id);
+        return view('students.edit-student',['student'=>$student]);
+
+    }
+
+    public function destroy($id)
+    {
+        $student=Student::find($id);
+        $old_image='uploads/students/'.$student->Image;
+        if(File::exists($old_image))
+        {
+            File::delete($old_image);
+        }
+        $student->delete();
+        return redirect(route('index'))->with('status','Student Deleted!!');
+    }
+   
+
+
+
+
+
+
+   
+
+}
+/*
+
+Route::get('/',[StudentController::class,'index'])->name('index');
+Route::get('/add-student',[StudentController::class,'add_student'])->name('add_student');
+Route::post('/add-student',[StudentController::class,'create'])->name('create');
+Route::get('/edit-student/{id}',[StudentController::class,'edit_read'])->name('edit_read');
+Route::put('/edit-student/{id}',[StudentController::class,'update'])->name('update');
+Route::get('/delete-student/{id}',[StudentController::class,'destroy'])->name('destroy');
+
+
+*/
