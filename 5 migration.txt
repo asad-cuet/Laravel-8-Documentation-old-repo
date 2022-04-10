@@ -1,0 +1,15 @@
+*Introduction:It creates table and define database schema.
+
+*Don't create table manually,if you want to use migration.
+
+*create:php artisaan make:migration migration-file-name --create=table-name
+
+*create column inside database/migration/migration-file-name.php:
+
+      $table->id();              // by default
+      $table->string('colname');
+      $table->text('colname');
+      $table->timestamps();      // by default
+
+*then migrate:php artisan migrate
+*for recreate table:php artisan migrate:refresh
