@@ -1,17 +1,26 @@
+*Create:
+code:php artisan make:model Model-name  
 
-Some Important controllers by model:
+*In app/hhtp/models/Model-name.php:
+write inside class:protected $table='posts';  // if you created a table named "posts",no problem this table will be model
+
+
+*Include:
+use App\Models\Model-name;
+
+*Some Important controllers by model:
 
                 Reading and redirect:
                                     public function index()
                                     {
-                                           $students=students::all();
+                                           $students=Model-name::all();
                                           return view('home',['students'=>$students]);
                                     }
 
                 Inserting and redirect with session:                    
                                                     public function create(Request $request)
                                                    {
-                                                         $student = new students;
+                                                         $student = new Model-name;
                                                          $student->Name=$request->name;
                                                          $student->City=$request->city;
                                                          $student->Marks=$request->marks;
@@ -21,14 +30,14 @@ Some Important controllers by model:
                 Reading a row for edit:                    
                                         public function edit($id)
                                        {
-                                            $student=students::find($id);
+                                            $student=Model-name::find($id);
                                             return view('editform',['stu'=>$student]);
                                        }
 
                  Updating that row and redirect:
                                       public function update(Request $request, $id)
                                            {
-                                               $student=students::find($id);
+                                               $student=Model-name::find($id);
                                                $student->Name=$request->name;
                                                $student->City=$request->city;
                                                $student->Marks=$request->marks;
@@ -38,6 +47,6 @@ Some Important controllers by model:
                    Deleting a row and redirecing:
                                                 public function destroy($id)
                                                    {
-                                                      $student=students::destroy($id);
+                                                      $student=Model-name::destroy($id);
                                                       return redirect(route('index'))->with('status','Data Deleted!!');
                                         
