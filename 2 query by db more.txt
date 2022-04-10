@@ -3,6 +3,7 @@ requirement:
 
 read query:
         $student=DB::table('student')->get();    
+        $student=DB::table('student')->select('col','col','col')->get();
         $student=DB::table('student')->orderBy('Id')->get();   //Ascending default
         $student=DB::table('student')->orderBy('Id','desc')->get();   //Descending
         
