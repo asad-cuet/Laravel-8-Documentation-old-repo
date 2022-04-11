@@ -56,4 +56,35 @@ Form system in blade:
 Route in web.php structure:
                       Route::get('/delete/{id}',[studentcontroller::class,'destroy'])->name('destroy');
 
-           }                                        
+           }      
+
+
+php code in blade:
+
+                 @php
+                         $var="asad";
+                 @endphp
+
+for in blade:
+
+       @for($i=0;$i,10;$i++)
+         {{$i}}
+       @endfor
+
+if in blade:
+
+      @if()
+
+      @elseif()
+
+      @else
+
+       @endif  
+
+or:
+
+   {{ $age>=18 ? 'You are adult' : 'You are not adult' }}             
+
+
+Include in blade: 
+        @include('name')    // here name from name.blade.php                   
