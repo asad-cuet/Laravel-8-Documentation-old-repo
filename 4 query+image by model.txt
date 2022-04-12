@@ -28,12 +28,18 @@ class StudentController extends Controller
         $student->Name=$request->name;
         $student->Course=$request->course;
 
-        if($request->hasfile('image'))
+         // enctype="multipart/form-data" 
+         //for name:getClientOriginalName(); 
+         // extension:getClientOriginalExtension()
+         //path:getRealPath(); 
+         //size:getSize()         
+
+         if($request->hasfile('image'))       
         {
             $file=$request->file('image');
-            $extention=$file->getClientOriginalExtension();
+            $extention=$file->getClientOriginalExtension();  
             $filename=time().'.'.$extention;
-            $file->move('uploads/students',$filename);
+            $file->move('uploads/students',$filename);  //move($destin,$name);
             $student->Image=$filename;
         }
         $student->save();
