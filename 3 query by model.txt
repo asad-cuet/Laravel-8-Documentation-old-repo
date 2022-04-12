@@ -17,6 +17,18 @@ use App\Models\Model-name;
                                           return view('home',['students'=>$students]);
                                     }
 
+
+                 pagination Reading and redirect:
+                                    public function index()
+                                    {
+                                           $students=Model-name::paginate(10);
+                                          return view('home',['students'=>$students]);
+                                    }
+
+                 //for Button in blade just write code anywhere: {{$students->links()}}
+
+
+
                 Inserting and redirect with session:                    
                                                     public function create(Request $request)
                                                    {
