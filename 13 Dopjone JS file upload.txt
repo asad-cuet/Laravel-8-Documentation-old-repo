@@ -19,7 +19,7 @@ copy all the links in head:
 
 ***controller.php:
 
-    method(){
+    method(Request $request){
 
     $image=$request->file('file');
     $imageName=tme().'.'.$image->extension();
