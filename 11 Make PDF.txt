@@ -1,6 +1,6 @@
-***artisan:composer require barryvdh/laravel-dompdf
+***Install package:composer require barryvdh/laravel-dompdf
 
-***config/app.php:
+***Set the package:config/app.php:
 
    inside provider array:
 
