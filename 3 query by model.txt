@@ -3,6 +3,7 @@ code:php artisan make:model Model-name  //add -m for migration
 
 *In app/hhtp/models/Model-name.php:
 write inside class:protected $table='posts';  // if you created a table named "posts",no problem this table will be model
+                   protected $fillable=["col","col"];
 
 
 *Include:
