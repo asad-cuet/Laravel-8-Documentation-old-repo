@@ -7,8 +7,12 @@ Code:composer require yajra/laravel-datatables
 *Include class in the config/app.php,if included not
 
 
+*migration.php:create columns
+
 *Model/Emplyee.php:
    protected $fillable=['name','age','salary'];
+
+*now migrate:php artisan migrate
 
 *Make Controller:
 Code:php artisan make:controller EmpController
@@ -40,7 +44,6 @@ use DataTables;
                       ->make(true);
           }
        
-     return view('listing');
     }
 
 
