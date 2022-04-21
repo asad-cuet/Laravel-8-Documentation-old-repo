@@ -1,3 +1,0 @@
-*Create folder:errors & file:404.blade.php at resouces/views/..
-
-*design the 404.blade.php file.Done!!

@@ -2,6 +2,7 @@ requirement:
         use Illuminate\Support\Facades\DB;  //at controller
 
 read query:
+        $student=Model-name::get();     //this is for model
         $student=DB::table('student')->get();    
         $student=DB::table('student')->select('col','col','col')->get();
         $student=DB::table('student')->orderBy('Id')->get();   //Ascending default
@@ -113,7 +114,7 @@ Condition read latest oldest method:
 
 
 
-Inser query:
+Insert query:
         $student=DB::table('student')->insert(['Name'=>'Hamzah','Email'=>'test','City'=>'Dhaka','Passing_date'=>'2020']); // Single data
         $student=DB::table('student')->insertOrIgnore(['Name'=>'Hamzah','Email'=>'test','City'=>'Dhaka','Passing_date'=>'2020']); // won't query if something wrong
         $student=DB::table('student')->insertGetId(['Name'=>'Hamzah','Email'=>'test','City'=>'Dhaka','Passing_date'=>'2020']); // will return id value

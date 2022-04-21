@@ -1,0 +1,58 @@
+***class:
+
+use App\Models\Model as model;
+
+   class:
+
+   public $datas;
+
+   public function render() 
+   {
+     $this->datas=model::all();
+     return view('livewire.name');   //as you use public var,you don't need to pass data
+   }
+
+
+
+***blade:
+
+   @foreach($datas as $data)
+
+    {{$data->col}}
+    {{$data->col}}
+    .....
+   @endforeach
+
+
+
+*******For pagination:
+
+
+***class:
+
+use App\Models\Model as model;
+use Livewire\WithPagination;
+
+   class:
+   
+   use WithPagination;
+   public $datas;
+
+   public function render() 
+   {
+     $this->datas=model::paginate(5);
+     return view('livewire.name');
+   }
+
+
+
+***blade:
+
+   @foreach($datas as $data)
+
+    {{$data->col}}
+    {{$data->col}}
+    .....
+   @endforeach
+  
+   {{$datas->links()}}
