@@ -36,17 +36,23 @@ use Livewire\WithPagination;
    class:
    
    use WithPagination;
-   public $datas;
 
    public function render() 
    {
-     $this->datas=model::paginate(5);
-     return view('livewire.name');
+     $datas=model::paginate(5);
+     return view('livewire.name',['datas'=>$datas]);
    }
 
 
 
 ***blade:
+
+<style>
+    nav svg{
+        height:20px;
+    }
+</style>   
+
 
    @foreach($datas as $data)
 

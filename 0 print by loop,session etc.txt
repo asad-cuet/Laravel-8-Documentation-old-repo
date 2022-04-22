@@ -36,6 +36,7 @@ Session system:
 
 Angchor tag redirect in blade with parameter:
                      <a  href="{{url('/editform',$stu->id)}}">#</a>   
+                    <a  href="{{route('name')}}">#</a>  
                      
 
                     
