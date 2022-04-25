@@ -7,6 +7,8 @@
     }
 </style>    
 <section>
+
+
 <!-- Button trigger modal -->
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create" wire:click.prevent="resetData()">
     Create
@@ -26,6 +28,7 @@
         <th scope="col">Email</th>
         <th scope="col">Phone</th>
         <th scope="col">Message</th>
+        <th scope="col">Image</th>
         <th scope="col">Action</th>
       </tr>
     </thead>
@@ -38,6 +41,7 @@
         <td>{{$data->email}}</td>
         <td>{{$data->phone}}</td>
         <td>{{$data->message}}</td>
+        <td><img src="{{url('storage/'.$data->filename)}}" style="max-width:50px;"></td>  <!--run first: php artisan storage:link .storage/ ==storage/app/public/  -->
         <td>
           <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#edit" wire:click.prevent="edit({{$data->id}})">
             Edit
@@ -54,6 +58,12 @@
   {{$datas->links()}}
 
 
+
+
+
+
+
+  
 </section>
 </div>
 
