@@ -5,9 +5,9 @@
 ***write on database/factories/Namefactory.php:
      
 
-    //include model
+    //use App\Models\Model-name;
 
-     protecyed $model=Model-name::class;
+     protected $model=Model-name::class;
 
      return [
 

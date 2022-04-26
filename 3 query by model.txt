@@ -14,7 +14,8 @@ use App\Models\Model-name;
                 Reading and redirect:
                                     public function index()
                                     {
-                                           $students=Model-name::all();   //Model-name::orderBy('Id','desc')->get();
+                                           $students=Model-name::all();    // or get()
+                                                //Model-name::orderBy('Id','desc')->get(); 
                                           return view('home',['students'=>$students]);
                                     }
 

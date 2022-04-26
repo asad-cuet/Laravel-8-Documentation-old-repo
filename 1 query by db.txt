@@ -10,6 +10,16 @@ use Illuminate\Support\Facades\DB;
 
 //Route::get('/',[studentController::class,'read'])->name('read');
 
+//blade:
+                 @foreach($students as $stu)
+                <tr>
+                    <td>{{$stu->id}}</td>       or,   {{$stu['col']}} 
+                    <td>{{$stu->Name}}</td>   
+                    <td>{{$stu->City}}</td>   
+                    <td>{{$stu->Marks}}</td>   
+                </tr>   
+                @endforeach 
+
 
 
 
@@ -33,7 +43,10 @@ use Illuminate\Support\Facades\DB;
         $student=DB::table('students')->find($id);
         return view('editform',['stu'=>$student]);
     }
-//Route::get('/editform/{id}',[studentController::class,'edit'])->name('edit');
+//Route::get('/edit/{id}',[studentController::class,'edit'])->name('edit');
+
+//blade:
+<a  href="{{url('/edit',$stu->id)}}">#</a>   
 
 
 
@@ -48,6 +61,8 @@ use Illuminate\Support\Facades\DB;
     }
 
 //Route::put('/editform/{id}',[studentController::class,'update']);
+//blade:
+<a  href="{{url('/editform',$stu->id)}}">#</a>   
 
 
 
@@ -58,6 +73,8 @@ use Illuminate\Support\Facades\DB;
     }
 
 //Route::get('/delete/{id}',[studentController::class,'delete']);
+//blade:
+<a  href="{{url('/delete',$stu->id)}}">#</a>   
 
 
 
@@ -66,6 +83,6 @@ use Illuminate\Support\Facades\DB;
 All Route:
 Route::get('/',[studentController::class,'index'])->name('index');
 Route::post('/',[studentController::class,'create']);
-Route::get('/editform/{id}',[studentController::class,'edit'])->name('edit');
+Route::get('/edit/{id}',[studentController::class,'edit'])->name('edit');
 Route::put('/editform/{id}',[studentController::class,'update']);
 Route::get('/delete/{id}',[studentController::class,'delete']);

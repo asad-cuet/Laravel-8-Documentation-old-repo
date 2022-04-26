@@ -1,3 +1,6 @@
+Note:All this can be use in model too.
+formate=:$student=Model-name::get();
+
 requirement:
         use Illuminate\Support\Facades\DB;  //at controller
 
@@ -119,7 +122,18 @@ Insert query:
         $student=DB::table('student')->insertOrIgnore(['Name'=>'Hamzah','Email'=>'test','City'=>'Dhaka','Passing_date'=>'2020']); // won't query if something wrong
         $student=DB::table('student')->insertGetId(['Name'=>'Hamzah','Email'=>'test','City'=>'Dhaka','Passing_date'=>'2020']); // will return id value
         $student=DB::table('student')->insert([['Name'=>'Hamzah','Email'=>'test','City'=>'Dhaka','Passing_date'=>'2020'],['Name'=>'Shanto','Email'=>'test','City'=>'Dhaka','Passing_date'=>'2029']]); // multiple data
-                
+            
+
+       //also with backend validate data:
+
+         $valideteData=$req->validate([        //   @error('col') {{$message}}  @enderror
+             'name'=>'required',
+             'email'=>'required|email',
+             'phone'=>'required|max:13',
+             'description'=>'required|max:50',
+         ]);
+         DB::table('name')->insert($valideteData);    
+    or,  Model-name::insert($valideteData);
 
 
 
