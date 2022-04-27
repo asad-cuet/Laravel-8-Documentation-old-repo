@@ -24,7 +24,7 @@ Recieving table data and printing:
 Session system:
 
                     How to create on method():
-                    return back()/view('')->with('Session message');
+                    return back()/view('')->with('status','Session message');
 
                     How to read on blade:
                     @if(session()->has('status'))

@@ -27,6 +27,7 @@ read query:
 
 
 Condition read where method:
+         $student=DB::table('students')->find($id);
          $student=DB::table('student')->where('Id','=','1')->get();         
          $student=DB::table('student')->where('Name','like','Asad%')->get();   
          $student=DB::table('student')->where('Name','like','zz%')->orWhere('Email','like','asad%')->get();  
@@ -140,6 +141,7 @@ Insert query:
 Update query:
         $update=DB::table('student')->where('id','3')->update(['Name'=>'Upadted','Email'=>'testupdate','City'=>'Dhaka','Passing_date'=>'2020']);
         $update=DB::table('student')->updateOrInsert(['Name'=>'Upadted'],['Email'=>'search7733','City'=>'Savar']); //if found,then update
+        $update=DB::table('student')->where('id','3')->update($validateData);
 
 
 
