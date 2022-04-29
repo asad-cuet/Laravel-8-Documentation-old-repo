@@ -1,0 +1,131 @@
+1.Project create:
+
+    laravel new project-name 
+
+
+2.Connect Database.
+
+3.login peckage installation:[user authentication]
+
+   composer require laravel/ui
+
+   php artisan ui bootstrap --auth
+
+   npm install
+
+   npm run dev  //if error,run again
+
+   php artisan migrate
+
+//file maked:migration, 'Auth' controller,
+             
+             'auth' blade folder, 'layout/deshboard.blade.php' folder,
+
+              ,A route on web.php
+
+Note:Done!You can register and login now
+
+4.Run again: [admin authentication]
+
+***(a)
+
+   php artisan make:model Admin -m
+
+//Admin migration:
+
+  copy all column from user migration
+
+//Admin model:
+
+  copy all from User model[rename Admin]
+
+  php artisan migrate
+
+***(b)
+
+  php artisan make:controller Admin/AdminController 
+  php artisan make:controller Admin/DasboardController
+
+***(c) 
+ create resource/views/backend folder
+ create resource/views/backend/admin/admin_login.blade.php folder  
+ create resource/views/backend/dashboard/admin_dashboard.blade.php  folder
+
+
+admin.blade.php:
+
+<form action="" class="mt-5" method="POST">
+@csrf
+
+<div class="from-group">
+    <label for="">Email</label>
+    <input type="email" class="form-control" name="email" />
+</div>
+
+<div class="from-group">
+    <label for="">Password</label>
+    <input type="password" class="form-control" name="password" />
+</div>
+
+<div class="from-group">
+    <input type="submit" value="Admin Login" class="btn btn-success mt-3" />
+</div>
+
+</form>
+
+
+admin_dashboard.blade.php:
+
+<h1>Admin Dashboard</h1>
+
+
+***(d)
+
+web.php:
+
+//admin route,include controller
+
+Route::get('/admin/login',[AdminController::class,'adminLoginForm'])->name('admin.login.form');
+Route::get('/admin/dashboard',[DashboardController::class,'adminDashboard'])->name('admin.dashboard');
+
+
+***(e)
+
+AdminController.php:
+
+adminLoginForm() 
+{
+   return view('backend.admin.admin_login');
+}
+
+
+
+
+
+
+DashboardController.php:
+
+adminDashboard() 
+{
+   return view('backend.dashboard.admin_dashboard');
+}
+
+
+
+  
+
+
+Providers/RouteServiceProvider.php:
+
+    public constant Home='/dashboard';
+    public constant ADMIN_HOME='/admin/dashboard'
+
+
+views:
+
+   create 'admin'->'auth' folder
+ 
+   admin/auth/:copy login.blade.php file from auth  //edit title,action route='admin.adminlogin'
+
+   
+   
