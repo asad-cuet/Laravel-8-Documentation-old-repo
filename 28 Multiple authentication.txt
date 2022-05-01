@@ -54,7 +54,7 @@ Note:Done!You can register and login now
 
 admin.blade.php:
 
-<form action="" class="mt-5" method="POST">
+<form action="{{route('admin.login')}}" class="mt-5" method="POST">
 @csrf
 
 <div class="from-group">
@@ -72,6 +72,10 @@ admin.blade.php:
 </div>
 
 </form>
+
+@if(Session::has('status'))
+{{Session::get('status')}}
+@endif
 
 
 admin_dashboard.blade.php:
@@ -113,19 +117,169 @@ adminDashboard()
 
 
   
+6.Admin Dashboard Gaurd.
 
 
-Providers/RouteServiceProvider.php:
+***(a)
 
-    public constant Home='/dashboard';
-    public constant ADMIN_HOME='/admin/dashboard'
+Models/Admin.php:
 
-
-views:
-
-   create 'admin'->'auth' folder
+   copy 'use Illuminate...\User as Authenticatable' from user model
  
-   admin/auth/:copy login.blade.php file from auth  //edit title,action route='admin.adminlogin'
+  edit:class Admin extends Authenticatable
+
+  {
+
+      protected $fillable=['name','email','password'];
+      protected $hidden=['password','remember_token'];
+
+  }
+
+***(b)  starts from here
+
+config/auth.php:
+
+         //add inside guards
+
+           'admin'=>[
+                  'driver'=>'session',
+                  'provider'=>'admins',
+                    ],
+
+         //add inside providers
+
+           'admins'=>[
+                  'driver'=>'eloquent',
+                  'provider'=>app\Models\Admin::class,
+                    ],
+
+***(c)
+
+   run:php artisan make:middleware Admin  
+
+   //register app/http/kernel.php in $routeMiddleware
+
+   'admin'=>\App\Http\Middleware\Admin::class,   //Admin:: is middleware name
+
+***(d)
+
+app/http/middleware/Admin.php:
+
+use Auth;
+
+     //add in handle()
+
+     if(!Auth::guard('admin')->check())
+     {
+        return redirect('/admin/login');  //if not loggeed in
+      }
+
+
+
+***(e):
+
+//edit web.php:
+
+   Route::group(['middleware'=>'admin'],function(){
+             Route::get('admin/dashboard',[DashboardController::class,'adminDashboard'])->name('admin.dashboard');
+                });
+Note:
+Done! You cannot access admin dashboard without login
+workflow:web->kernel->middleware->auth
+  
+   
+
+7.
+
+add in web.php:
+
+    Route::post('/admin/login/pro',[AdminController::class,'adminLogin'])->name('admin.login');
+
+AdminController.php:
+
+use Session;
+use Auth;
+
+     adminLogin(Request $req)
+     {
+      $req->validate([
+            'email'=>'required|email',
+            'password'=>'required'
+                      ]);
+
+     if(Auth::guard('admin')->attempt(['email'=>$req->email,'password'=>$req->password]))
+     {
+      return redirect('/admin/ashboard');
+     }
+     else
+     {
+     Session::flash('status','Invalid Email or Password');
+     return back();
+     }
+
+8.Admin Logout
+
+web.php:
+
+   // add in group
+    Route::get('admin/logout',[AdminController::class,'adminLogout'])->name('admin.logout');
+
+
+AdminController.php:
+
+    adminLogout()
+    {
+         Auth::guard('admin')->logout();
+         return redirect('admin/login');
+    }
+
+admin_dashboard.blade.php:
+
+
+   /add 
+   <h3 class="text-center">
+      <a href="{{url('admin/logout')}}">Logout</a>
+   </h3>
+
+                
+
+9.Admin Login guard:
+
+run:php artisan make:middleware AdminLoginGuard
+
+
+miidleware/AdminLoginGuard.php:
+use Auth; 
+
+         if(Auth::guard('admin')->check())
+        {
+           return redirect('/admin/dashboard');  //if not loggeed in
+        }
+kernel.php:
+
+   // add insinde $routemiddleware:
+
+    'adminLoginGuard'=>\App\Http\Middleware\AdminLoginGuard::class,
+
+
+web.php:
+     //edit
+
+Route::group(['middleware'=>'adminLoginGuard'],function(){
+    Route::get('/admin/login',[AdminController::class,'adminLoginForm'])->name('admin.login.form');
+                                               });
+
+
+Note:All done!
+
+
+
+
+
+
+
+
+
 
    
    
