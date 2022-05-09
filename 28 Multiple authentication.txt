@@ -185,7 +185,7 @@ use Auth;
                 });
 Note:
 Done! You cannot access admin dashboard without login
-workflow:web->kernel->middleware->auth
+workflow:web->kernel->middleware->auth   ||   you can create session from controller at auth
   
    
 
