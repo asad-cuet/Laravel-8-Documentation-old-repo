@@ -15,3 +15,9 @@ Route::namespace('Admin')->prefix('admin')->name('admin.')  //prefix for add at 
                                                                   })         
 
                                             });
+
+
+
+Route::prefix('category')->name('category.')->group(function(){
+         Route::get('read','Admin\CategoryController@read')->name('read'); 
+                                      });

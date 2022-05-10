@@ -11,9 +11,7 @@
 
    php artisan ui bootstrap --auth
 
-   npm install
-
-   npm run dev  //if error,run again
+   npm install && npm run dev  //if error,run again
 
    php artisan migrate
 
