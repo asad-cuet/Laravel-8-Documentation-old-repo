@@ -1,0 +1,352 @@
+1.create new project
+
+2.connect database
+
+3.create ui system  //don't migrate now
+
+4.modify user migration:
+
+      add:$table->tinyInteger('role_as')->default('0');
+
+      add the column manually in database
+
+5.migrate now
+
+
+6.admin middleware:
+
+      php artisan make:middleware AdminMiddleware
+
+
+7.replace in middleware:
+
+      use Illuminate\Support\Facades\Auth;
+      public function handle($request, Closure $next)
+    {
+        if(Auth::check())
+        {
+            if(Auth::user()->role_as == '1')
+            {
+                return $next($request);
+            }
+            else
+            {
+                return redirect('/home')->with('status','Access Denied! as you are not as admin');
+            }
+        }
+        else
+        {
+            return redirect('/home')->with('status','Please Login First');
+        }
+    }
+
+
+   
+
+
+8.Kernel.php:
+
+
+    protected $routeMiddleware = [
+
+        'isAdmin' => \App\Http\Middleware\AdminMiddleware::class, //Add to the end
+    ];
+
+
+9.Controllers/Auth/LginController.php:
+
+       comment $redirectTo
+
+       paste:   
+     use Illuminate\Support\Facades\Auth; 
+    protected function authenticated()
+    {
+        if(Auth::user()->role_as == '1') //1 = Admin Login
+        {
+            return redirect('dashboard')->with('status','Welcome to your dashboard');
+        }
+        elseif(Auth::user()->role_as == '0') // Normal or Default User Login
+        {
+            return redirect('/')->with('status','Logged in successfully');
+        }
+    }
+
+
+     import Auth class [click>right-button,import class]
+
+
+10.web.php:
+
+      Route::middleware(['auth','isAdmin'])->group(function () {
+
+            Route::get('/dashboard', function () {
+                 return view('admin.dashboard');   //temporally use:return "Admin Login";
+                                  });
+
+          });
+
+11.edit role_as value in user table.create a new user as normal user
+
+Note:Now admin login redirect to different route from user
+
+
+12.Integrate Admin Dashboard:
+
+     template link:https://github.com/creativetimofficial/material-dashboard-bs4
+     web link:https://demos.creative-tim.com/
+
+     new file:views/layouts/admin.blade.php
+
+     new folder:public/admin/css/:paste template 'material..css'
+
+     new folder:public/admin/js/:paste template core js all' and plugin/perfect-scrollbar.jqu..js
+
+
+     new:layout/inc/
+            sidebar.blade.php:paste sidebar   modify tilte, replace href="#"
+            adminnav.blade.php:paste navbar
+            adminfooter.blade.php:paste footer
+
+
+     admin.blade.php:                      // asset('') redirect:public/
+             copy paste from app.blade.php 
+             clear body
+             replace font link from template dashboard
+             replace css links
+             take <div class="wrapper">all content here</div>
+             @include('layouts.inc.sidebar')
+             <div class="main-panel">
+             @include('layouts.inc.adminnav')
+             <div class="content">@yield('content')</div>                  <!-- includinh blade component -->
+             @include('layouts.inc.adminfooter')
+             </div>
+
+             paste core js files (all).modify src value
+             @yield('scripts')
+
+
+     new:views/admin/dashboard.blade.php:
+             @extends('layouts.admin')                                     <!-- showing main component  -->
+             
+             @section('content')
+                 .card>.card-body><h1>Welcome to dashboard</h1>
+             @endsection
+
+    replace logout button from app.blade.php with <form>
+
+Note:get login as admin
+
+
+
+13.Add Category table+Page:
+
+     php artisan make:model Category -m
+
+     paste on migration:
+       $table->string('name');
+       $table->string('slug');
+       $table->longText('description');
+       $table->tinyInteger('status')->default('0');
+       $table->tinyInteger('popular')->default('0');
+       $table->string('image')->default(null);
+       $table->string('meta_title');
+       $table->string('meta_descript');
+       $table->string('meta_keywords');
+
+
+     model:
+         protected $table='categories';
+         protected $fillable=['name','slug','description','status','popular','image','meta_title','meta_descrip','meta_keywords'];
+
+
+     php artisan migrate
+
+     new:views/admin/category/index.blade.php:
+             @section('content')
+                 .card>.card-body><h1>Cateogry</h1>
+             @endsection
+
+
+     php artisan make:controller Admin/CategoryController:
+                 index() {
+                    return view('admin.category.index');
+                          }
+
+     php artisan make:controller Admin/DashboardController:
+                 index() {
+                    return view('admin.dashboard');
+                          }
+
+
+     edit:
+
+        Route::get('/dashboard','Admin\DashboardController@index');
+
+     add:
+        Route::get('/categories','Admin\CategoryController@index');
+
+ 
+     register controller for not include class:
+          providers/RouteServiceProvider.php: uncomment $namespace
+
+
+     edit sidebar>category url:
+                  href="{{ url('/categories') }}"
+ 
+
+
+14.Integrate Category with your ajax
+
+
+15.Active navbar button:<li class="{{Request::is('categories') ? 'active':'' }}">  //if url=/categories
+
+
+16.Add Product table+page:
+
+
+      php artisan make:model Product -m
+
+
+
+      migration:
+                $table->bigInteger('cate_id');
+                $table->string('name');
+                $table->mediumText('small_description');
+                $table->longText('description');
+                $table->string('original_price');
+                $table->string('selling_price');
+                $table->string('image')->default(null);
+                $table->string('qty');
+                $table->string('tax');
+                $table->tinyInteger('status');
+                $table->tinyInteger('trending');
+                $table->mediumText('meta_title');
+                $table->mediumText('meta_keywords');
+                $table->mediumText('meta_descript');
+
+
+      model:
+              protected $table='products';
+              protected $fillable=['cate_id','name','small_description','description','original_price','selling_price','image','tax','status','trending','meta_title','meta_keywords','meta_descript'];
+
+
+
+              public function category()  //making relationship
+                {
+                     return $this->belongsTo(Category::class,'cate_id','id');
+                }
+
+
+     do as Category
+
+
+     public function insert_form()
+        {
+            $category=Category::all();
+            return view('admin.product.add',['category'=>$category]);
+        }   
+
+
+      <div class="col-md-12 mb-3">
+                  <select class="form-select" aria-label="Default select example">
+                        <option selected>Open this select menu</option>
+                        @foreach($category as $item)
+                        <option value="{{$item->id}}">{{$item->name}}</option>
+                        @endforeach
+                  </select>
+       </div>      
+
+
+       fetch category:
+            {{$item->category->name}}   
+
+
+
+17.Frontend Layout:
+
+       new:layouts/frontend.blade.php:paste from admin,clear except links,modify link(use bootstrap) location,add on ul class="ms-auto",replace navbar class>dark
+       new:viws/frontend/dashboard.blade.php:do as admin dashboard
+       new:public/frontend/css & js
+       new:layouts/front_inc/:
+                           front_navbar.blade.php:use bootstrap,rename,remove fluid class,add on ul class="ms-auto",replace navbar class>dark
+                           slider.blade.php:use bootstrap,edit href="assets/images/.."
+
+
+       include front_inc.navbar in layouts/frontend
+       include front.slider in views/frontend/dashboard
+
+       php artisan make:controller Frontend/FrontendController:
+                             index() 
+                             {
+                                     $featured_product=Product::where('trending','1')->take(15)->get();
+                                     return view('frontend/dashboard',['feteaured_product'=>$featured_product]);
+                             }
+ 
+       web.php:
+               Route::get('/','Frontend/FrontendController@index');
+
+
+
+18.Product Slider:[web link:https://owlcarousel2.github.io/OwlCarousel2/]
+
+    include in layouts/frontend:
+       <link rel="stylesheet" href="owlcarousel/owl.carousel.min.css">
+       <link rel="stylesheet" href="owlcarousel/owl.theme.default.min.css">
+
+       <script src="jquery.min.js"></script>  
+       <script src="owlcarousel/owl.carousel.min.js"></script>
+
+
+    dashboard.blade.php:
+
+    <div class="py-5">
+      <div class="container">
+            <div class="row">
+                  <h2>Feteared Product</h2>
+                  <div class="owl-carousel featured-carousel owl-theme">
+                        @foreach ($feteaured_product as $item)
+                              <div class="item">
+                                    <div class="card">
+                                          <img src="{{asset('assets/uploads/product/'.$item->image)}}" alt="Product Image">
+                                          <div class="card-body">
+                                                <h5>{{$item->name}}</h5>
+                                                <span class="float-start">{{$item->selling_price}}</span>
+                                                <span class="float-end"><s>{{$item->original_price}}</s></span>
+                                          </div>
+                                    </div>
+                              </div>
+                        @endforeach
+                  </div>
+            </div>
+      </div>
+    </div>
+
+
+     also:
+            @section('scripts')
+            <script>
+                  $('.featured-carousel').owlCarousel({
+                        loop:true,
+                        margin:10,
+                        responsiveClass:true,
+                        responsive:{
+                        0:{
+                              items:1,
+                              nav:true
+                        },
+                        600:{
+                              items:3,
+                              nav:false
+                        },
+                        1000:{
+                              items:5,
+                              nav:true,
+                              loop:false
+                        }
+                        }
+                  })
+
+            </script> 
+            @endsection
+
+

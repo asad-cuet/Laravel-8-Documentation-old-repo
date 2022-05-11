@@ -19,5 +19,36 @@
 
       $table->timestamps();      // by default
 
+
+
+
+
+
+
+
 *then migrate:php artisan migrate
 *for recreate table:php artisan migrate:refresh
+
+
+
+
+
+Product table:
+
+
+
+      migration:
+                $table->bigInteger('cate_id');
+                $table->string('name');
+                $table->mediumText('small_description');
+                $table->longText('description');
+                $table->string('original_price');
+                $table->string('selling_price');
+                $table->string('image');
+                $table->string('qty');
+                $table->string('tax');
+                $table->tinyInteger('status');
+                $table->tinyInteger('trending');
+                $table->mediumText('meta_title');
+                $table->mediumText('meta_keywords');
+                $table->mediumText('meta_descript');
