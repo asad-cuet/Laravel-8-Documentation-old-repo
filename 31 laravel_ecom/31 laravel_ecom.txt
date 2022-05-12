@@ -53,7 +53,7 @@
     ];
 
 
-9.Controllers/Auth/LginController.php:
+9.Controllers/Auth/LoginController.php:
 
        comment $redirectTo
 
@@ -211,6 +211,7 @@ Note:get login as admin
       migration:
                 $table->bigInteger('cate_id');
                 $table->string('name');
+                $table->string('slug')->default(null);
                 $table->mediumText('small_description');
                 $table->longText('description');
                 $table->string('original_price');
@@ -227,7 +228,7 @@ Note:get login as admin
 
       model:
               protected $table='products';
-              protected $fillable=['cate_id','name','small_description','description','original_price','selling_price','image','tax','status','trending','meta_title','meta_keywords','meta_descript'];
+              protected $fillable=['cate_id','name','slug','small_description','description','original_price','selling_price','image','tax','status','trending','meta_title','meta_keywords','meta_descript'];
 
 
 
@@ -349,4 +350,466 @@ Note:get login as admin
             </script> 
             @endsection
 
+
+19.All category page:
+
+
+             add in navbar
+
+             new:frontend/category.blade.php:add web,cont.
+            
+   cont:
+    public function category() 
+    {
+        $category=Category::all();
+        return view('frontend/category',['category'=>$category]);
+
+    }
+
+
+   category-blade shape:
+
+
+<div class="py-5">
+      <div class="container">
+            <div class="row">
+                  <h2>All Categories</h2>
+                  
+                        @foreach ($category as $item)
+                             
+                              <div class="col-md-3 mb-3">
+                                    <a href="{{url('category/'.$item->slug)}}" >
+                                    <div class="card">
+                                          <img src="{{asset('assets/uploads/category/'.$item->image)}}" alt="Product Image">
+                                          <div class="card-body">
+                                                <h5>{{$item->name}}</h5>
+                                          </div>
+                                    </div>
+                                    </a>
+                              </div>
+                        @endforeach
+                  
+            </div>
+      </div>
+</div>
+
+
+
+
+
+
+20.view-category:
+
+             new:frontend/view-category.blade.php:add web,cont.
+
+   cont:
+    public function view_category($slug) 
+    {
+        if($category=Category::where('slug',$slug)->exists())
+        {
+            $category=Category::where('slug',$slug)->first();
+            $product=Product::where('cate_id',$category->id)->orderBy('id','DESC')->get();
+            return view('frontend/view-category',['product'=>$product,'category'=>$category]);
+        }
+        else
+        {
+            return view('frontend/dashboard')->with("status","Slug doesn't exist");
+        }
+        
+
+    }
+ 
+
+<div class="py-5">
+      <div class="container">
+            <div class="row">
+                  <h2>{{$category->name}}</h2>
+                 
+                        @foreach ($product as $item)
+                              <div class="col-md-3 mb-3">
+                                    <a href="{{url('category/'.$item->category->slug.'/'.$item->slug)}}">
+                                    <div class="card">
+                                          <img src="{{asset('assets/uploads/product/'.$item->image)}}" alt="Product Image">
+                                          <div class="card-body">
+                                                <h5>{{$item->name}}</h5>
+                                                <span class="float-start">{{$item->selling_price}}</span>
+                                                <span class="float-end"><s>{{$item->original_price}}</s></span>
+                                          </div>
+                                    </div>
+                                    </a>      
+
+                              </div>
+                        @endforeach
+                  
+            </div>
+      </div>
+</div>
+
+
+21.Add trending category in dashboard:
+
+           cont:
+    public function index() 
+    {
+        $feteared_product=Product::where('trending','1')->take(15)->get();
+        $trending_category=Category::where('popular','1')->take(15)->get();
+        return view('frontend/dashboard',['feteaured_product'=>$feteared_product,'trending_category'=>$trending_category]);
+
+    }
+  
+   paste feteaured product box in dashboard blade
+
+
+22.Make view-product:
+
+       new:viws/frontend/view-product.blade.php
+
+       <a href="{{url('category/'.$item->category->slug.'/'.$item->slug)}}">
+
+       web:Route::get('category/{cate_slug}/{prod_slug}','Frontend\FrontendController@view_product');
+
+
+  cont:
+    public function view_product($cate_slug,$prod_slug)
+    {
+        if(Category::where('slug',$cate_slug)->exists())
+        {
+            if(Product::where('slug',$prod_slug->exists))
+            {
+                $product=Product::where('slug',$prod_slug)->first();
+                return view('frontend/view-product',['product'=>$product]);
+            }
+            else
+            {
+                return view('frontend/view-product')->with('status','No such product found');
+            }
+        }
+        else
+        {
+        return view('frontend/view-product')->with('status','No such Category found');
+        }
+    }
+
+   blade box:
+
+@section('content')
+ <div class="py-3 mb-4 shadow-sm bg-warning border-top">
+      <div class="container">
+            <h6 class="mb-0">{{$product->category->name}}</h6>      
+      </div>       
+</div>      
+
+
+<div class="container">
+      <div class="card shadow">
+            <div class="card-body">
+                  <div class="row">
+                        <div class="col-md-4 border-roght">
+                              <img src="{{asset('assets/uploads/product/'.$product->image)}}" alt="image" class="w-100">
+                        </div>
+                        <div class="col-md-8">
+                              <h2 class="mb-0">
+                                    {{$product->name}}
+                                    <label style="font-size:16px;" class="float-end badge bg-danger trending_tag">{{$product->trending==1 ? 'Trending':''}}</label>
+                              </h2>
+                              <hr>
+                              <label class="me-3">Original Price: <s>Rs 1200</s></label>
+                              <label class="fw-bold">Selling Price: Rs 1200</label>
+                              <p class="mt-3">
+                                    {{$product->small_description}}     
+                              </p>
+                              <hr>
+                              @if($product->qty>0)
+                                    <label class="badge bg-success">In stock</label>
+                              @else       
+                                    <label class="badge bg-danger">In stock</label> 
+                              @endif
+                              <div class="row mt-2">
+                                     <div class="col-md-3">
+                                                <label for="quantity">Quantity</label>
+                                                <div class="input-group text-center mb-3" style="width:130px;">
+                                                       <button class="input-group-text">-</button>
+                                                       <input type="text" name="quantity" value="1" class="form-control text-center" />
+                                                       <button class="input-group-text">+</button>      
+                                                </div>       
+                                    </div> 
+                                    <div class="col-md-9">
+                                          <br/>
+                                          <button type="button" class="btn btn-success me-3 float-start">Add to Wishlist</button>      
+                                          <button type="button" class="btn btn-primary me-3 float-start">Add to Wishlist</button>      
+                                    </div>     
+                              </div>      
+                        </div>
+                  </div>
+            </div>
+      </div>
+</div>
+
+
+
+@endsection
+
+
+
+
+23.Integrate Google fonts and font awesome:
+ 
+     in layouts.frontend.blade.php:
+                  <link rel="preconnect" href="https://fonts.googleapis.com">
+                  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+
+                  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/fontawesome.min.css" integrity="sha384-jLKHWM3JRmfMU0A5x5AkjWkw/EYfGUAGagvnfryNV3F9VqM98XiIH7VBGVoxVSc7" crossorigin="anonymous">
+
+    add after Add to Wishlist<i class="fa fa-heart"></i>
+    add after Add to Cart<i class="fa fa-shopping-cart"></i>
+
+
+24.Button Increment decrement:
+
+
+       add class=decrement-btn/increment-btn
+       add on input class="qty qty-input"
+
+
+   <script>
+   $(document).ready(function(){
+         $('.increment-btn').click(function(e){
+               e.preventDefault();
+
+               var inc_value=$('.qty-input').val();
+               var value=parseInt(inc_value,10);
+               value=isNaN(value) ? 0:value;
+               if(value<10)
+               {
+                     value++;
+                     $('.qty-input').val(value);
+               }
+         });
+
+
+         $('.decrement-btn').click(function(e){
+               e.preventDefault();
+
+               var dec_value=$('.qty-input').val();
+               var value=parseInt(dec_value,10);
+               value=isNaN(value) ? 0:value;
+               if(value>1)
+               {
+                     value--;
+                     $('.qty-input').val(value);
+               }
+         });
+   });
+   </script>
+       
+
+
+
+25.Add to Cart activate:
+
+      php artisan make:model Cart -m
+
+      migration:
+          $table->string('user_id');
+          $table->string('prod_id');
+          $table->string('prod_qty');
+
+     model:
+      protected $table='carts';
+      protected $fillable=['user_id','prod_id','prod_qty'];
+    public function product()  //making relationship
+    {
+         return $this->belongsTo(Product::class,'prod_id','id');
+    }
+
+     migrate now
+
+     php artisan make:contrller Frontend/CartController
+
+
+     view_product.blade.php:
+          add:
+             input class="addToCartBtn"
+             add beside card class="product_data"
+             <input type="hidden" value="{{$product->id}}" class="prod_id">
+              
+
+
+          <script>   
+         $('.addToCartBtn').click(function(e){
+               e.preventDefault();
+               var product_id=$(this).closest('.product_data').find('.prod_id').val();
+               var product_qty=$(this).closest('.product_data').find('.qty-input').val();
+               
+
+               $.ajaxSetup({     //has extra code on head:<meta name="csrf-token" content="{{ csrf_token() }}">
+                  headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                  }
+               });
+
+
+               $.ajax({
+                     method:"POST",
+                     url:"/add-to-cart",
+                     data:{
+                           'product_id':product_id,
+                           'product_qty':product_qty,
+                     },
+                     success:function(response) {
+                          swal(response.status);
+                     }
+               });
+            });
+         </script>
+
+    
+    web:Route::post('/add-to-cart','Frontend\CartController@addProduct');
+
+
+    cont:
+
+    use Illuminate\Support\Facades\Auth;
+    public function addProduct(Request $request)
+    {
+          $product_id=$request->input('product_id');
+          $product_qty=$request->input('product_qty');
+
+          if(Auth::check())
+          {
+              $prod_check=Product::where('id',$product_id)->first();
+              if($prod_check)
+              {
+                  if(Cart::where('prod_id',$product_id)->where('user_id',Auth::id())->exists())
+                  {
+                    return response()->json(['status'=>$prod_check->name.' Already Added to Cart']);
+                  }
+                  else
+                  {
+                  $cartItem=new Cart();
+                  $cartItem->user_id=Auth::id();
+                  $cartItem->prod_id=$product_id;
+                  $cartItem->prod_qty=$product_qty;
+                  $cartItem->save();
+                  return response()->json(['status'=>$prod_check->name.' Added to Cart']);
+                  }
+              }
+          }
+          else
+          {
+              return response()->json(['status'=>'Login to Continue']);
+          }
+    }
+
+
+26.Add login registrate user button on navbar from app.blade.php,home button from welcome.blade.php
+
+
+
+27.Cart Page+increment/drement+remove button:
+    
+***     add cart button on navbar
+
+***     new:views/frontend/cart.blade.php:
+
+
+
+***    public function viewCart()
+    {
+        $product=Cart::orderBy('id','DESC')->get();
+        return view('frontend.cart',['product'=>$product]);
+    }
+
+
+****     script:   //this incre/decre script you can use also in view-product.better you should take all it in custom.js file.I took
+
+<script>
+$('.increment-btn').click(function(e){
+      e.preventDefault();
+
+      var inc_value=$(this).closest('.product_data').find('.qty-input').val();
+      var value=parseInt(inc_value,10);
+      value=isNaN(value) ? 0:value;
+      if(value<10)
+      {
+            value++;
+            $(this).closest('.product_data').find('.qty-input').val(value);
+      }
+});
+
+
+$('.decrement-btn').click(function(e){
+      e.preventDefault();
+
+      var dec_value=$(this).closest('.product_data').find('.qty-input').val();
+      var value=parseInt(dec_value,10);
+      value=isNaN(value) ? 0:value;
+      if(value>1)
+      {
+            value--;
+            $(this).closest('.product_data').find('.qty-input').val(value);
+      }
+});
+
+
+$('.delete-cart-item').click(function(e){
+      e.preventDefault();
+
+      var cart_id=$(this).closest('.product_data').find('.cart_id').val();
+
+      $.ajaxSetup({
+                  headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                  }
+      });
+
+
+
+      $.ajax({
+            method:"POST",
+            url:"/delete-cart-item",
+            data:{
+                  'cart_id':cart_id
+            },
+            success:function(response) {
+                swal("",response.status, "success");
+            }
+      });
+
+});
+
+</script>
+
+
+****  web:
+
+Route::middleware('auth')->group(function() {
+    Route::get('/cart','Frontend\CartController@viewCart')->name('cart');
+    Route::post('/delete-cart-item','Frontend\CartController@deleteCartItem');
+});
+
+ 
+ 
+****  cont:
+
+
+    public function viewCart()
+    {
+        $product=Cart::where('user_id',Auth::id())->orderBy('id','DESC')->get();
+        return view('frontend.cart',['product'=>$product]);
+    }
+
+
+    public function deleteCartItem(Request $request)
+    {
+        $cart_id=$request->input('cart_id');
+        $cartItem=Cart::where('id',$cart_id)->first();
+        $cartItem->delete();
+        return response()->json(['status'=>'Product Deleted Successfully']);
+    }
+        
+
+    
 
