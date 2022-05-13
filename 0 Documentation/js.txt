@@ -74,7 +74,7 @@
 
 
      *slideshow:
-            <script>  myShow=w3.slideShow('img>class_name',interval);  //in ms  </script>
+            <script>  myShow=w3.slideShow('img/any-ele.>class_name',interval);  //in ms  </script>
 
             *No autostart:interval=0
             *add button:

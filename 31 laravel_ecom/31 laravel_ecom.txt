@@ -1,4 +1,4 @@
-1.create new project
+1.create new project    //out-topic kill port cmd command:npx kill-port 3306.kill app:tasklist>Taskkill /PID 4132 /F
 
 2.connect database
 
@@ -214,8 +214,8 @@ Note:get login as admin
                 $table->string('slug')->default(null);
                 $table->mediumText('small_description');
                 $table->longText('description');
-                $table->string('original_price');
-                $table->string('selling_price');
+                $table->integer('original_price');
+                $table->integer('selling_price');
                 $table->string('image')->default(null);
                 $table->string('qty');
                 $table->string('tax');
@@ -227,8 +227,8 @@ Note:get login as admin
 
 
       model:
-              protected $table='products';
-              protected $fillable=['cate_id','name','slug','small_description','description','original_price','selling_price','image','tax','status','trending','meta_title','meta_keywords','meta_descript'];
+              protected $table='products'; 
+              protected $fillable=['cate_id','name','slug','small_description','description','original_price','selling_price','image','qty','tax','status','trending','meta_title','meta_keywords','meta_descript'];
 
 
 
@@ -535,8 +535,11 @@ Note:get login as admin
                                     </div> 
                                     <div class="col-md-9">
                                           <br/>
-                                          <button type="button" class="btn btn-success me-3 float-start">Add to Wishlist</button>      
-                                          <button type="button" class="btn btn-primary me-3 float-start">Add to Wishlist</button>      
+                                          @if($product->qty>0)
+                                          <button type="button" class="btn btn-success me-3 float-start">Add to Wishlist <i class="fa fa-heart"></i></button>     
+                                          @else       
+                                          <button type="button" class="btn btn-primary me-3 float-start  addToCartBtn">Add to Cart <i class="fa fa-shopping-cart"></i></button> 
+                                          @endif     
                                     </div>     
                               </div>      
                         </div>
@@ -712,7 +715,7 @@ Note:get login as admin
     
 ***     add cart button on navbar
 
-***     new:views/frontend/cart.blade.php:
+***     new:views/frontend/cart.blade.php: //layout given in next point
 
 
 
@@ -811,5 +814,148 @@ Route::middleware('auth')->group(function() {
     }
         
 
-    
+
+
+28.Count price and update quantity:
+
+
+***   cart.blade.php:
+
+
+
+<div class="container my-5">
+      <div class="card shadow">
+            <div class="card-body">
+                  @php $total=0; @endphp
+                  @foreach ($product as $item)
+                  <div class="row product_data">
+     
+                        <div class="col-md-2 my-auto">
+                              <img src="{{asset('assets/uploads/product/'.$item->product->image)}}" height="70px" width="70px" alt="Image">
+                        </div>
+                        <div class="col-md-3 my-auto">
+                            <h6>{{$item->product->name}}</h6>
+                        </div>
+                        <div class="col-md-2 my-auto">
+                            <h6>Rs {{$item->product->selling_price}}</h6>
+                        </div>
+                        <div class="col-md-3 my-auto">
+                              <input type="hidden" value="{{$item->id}}" class="cart_id">
+                              @if($item->product->qty > $item->prod_qty)
+                              <label for="quantity">Quantity</label>
+                              <div class="input-group text-center mb-3" style="width:130px;">
+                                     <button class="input-group-text changeQuantity decrement-btn">-</button>
+                                     <input type="text" name="quantity" value="{{$item->prod_qty}}" class="form-control qty-input text-center" />
+                                     <button class="input-group-text changeQuantity increment-btn">+</button>      
+                              </div>  
+                              @php $total+=($item->product->selling_price)*($item->prod_qty); @endphp
+                              @else
+                                  <h6>Out of Stock</h6>
+                              @endif
+                        </div>
+                        <div class="col-md-2 my-auto">
+                              <button class="btn btn-danger delete-cart-item"><i class="fa fa-trash"></i>Remove</button>
+                        </div>
+                         
+                  </div>
+                 
+                  
+                  @endforeach
+            </div>
+            <div class="card-footer">
+                  <h6>Total Price : Rs <span class="total">{{$total}}</span></h6>
+                  <a href="{{url('/checkout')}}" class="btn btn-outline-success float-end">Proceed to Checkout</a>
+            </div>
+      </div>
+</div>
+
+
+***   script:
+       <script>
+            $('.changeQuantity').click(function(e){
+                  e.preventDefault();
+
+                  var cart_id=$(this).closest('.product_data').find('.cart_id').val();
+                  var qty=$(this).closest('.product_data').find('.qty-input').val();
+
+
+
+
+                  $.ajax({
+                        method:"POST",
+                        url:"/update-cart",
+                        data:{
+                              'cart_id':cart_id,
+                              'prod_qty':qty,
+                        },
+                        success:function(response) {
+                        $('.total').html(response.status);
+                        //console.log(response.status);
+                        }
+                  });
+      </script>
+
+
+***   web inside 'auth' middleware:Route::post('/update-cart','Frontend\CartController@updateCart');
+
+
+
+***   cont:
+
+    public function updateCart(Request $request)
+    {
+        $cart_id=$request->input('cart_id');
+        $prod_qty=$request->input('prod_qty');
+        if(Cart::where('id',$cart_id)->exists())
+        {
+            $cart=Cart::where('id',$cart_id)->first();
+            $cart->prod_qty=$prod_qty;
+            $cart->update();
+ 
+            $cart2=Cart::where('user_id',Auth::id())->get();
+            $total=0;
+            foreach($cart2 as $item)
+            {
+                 $total+=($item->product->selling_price)*($item->prod_qty);
+            } 
+            return response()->json(['status'=>$total]);
+        }
+    }
+
+
+29.Checkout page:
+
+     new:views/frontend/checkout.blade.php
+
+     php artisan make:controller Frontend/CheckoutController
+
+    web inside auth:Route::get('/checkout','Frontend\CheckoutController@index');
+
+    cont:
+
+    public function index()
+    {
+        $old_cartitems=Cart::where('user_id',Auth::id())->get();
+        
+        foreach($old_cartitems as $item)
+        {
+            if(Product::where('id',$item->prod_id)->where('qty','<',$item->prod_qty)->exists())
+            {
+             //   $p=Product::where('id',$item->prod_id)->where('qty','<',$item->prod_qty)->first();
+           //    dd($p->qty);
+                $removeItem=Cart::where('user_id',Auth::id())->where('prod_id',$item->prod_id)->first();
+                $removeItem->delete();
+            }
+        }
+
+        $cartitems=Cart::where('user_id',Auth::id())->get();
+        return view('frontend/checkout',['cartitems'=>$cartitems]);
+    }
+
+
+   lay:
+
+
+
+
 
