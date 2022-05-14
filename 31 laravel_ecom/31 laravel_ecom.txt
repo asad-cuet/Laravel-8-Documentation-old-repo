@@ -8,7 +8,17 @@
 
       add:$table->tinyInteger('role_as')->default('0');
 
-      add the column manually in database
+      //for placeOrder
+      $table->string('fname')->default(null);
+      $table->string('lname')->default(null);
+      $table->string('phone')->default(null);
+      $table->string('address1')->default(null);
+      $table->string('address2')->default(null);
+      $table->string('city')->default(null);
+      $table->string('state')->default(null);
+      $table->string('country')->default(null);
+      $table->string('pincode')->default(null); 
+
 
 5.migrate now
 
@@ -878,9 +888,6 @@ Route::middleware('auth')->group(function() {
                   var cart_id=$(this).closest('.product_data').find('.cart_id').val();
                   var qty=$(this).closest('.product_data').find('.qty-input').val();
 
-
-
-
                   $.ajax({
                         method:"POST",
                         url:"/update-cart",
@@ -889,10 +896,20 @@ Route::middleware('auth')->group(function() {
                               'prod_qty':qty,
                         },
                         success:function(response) {
-                        $('.total').html(response.status);
+                        if(response.status=='out_of_stock')
+                        {
+                              swal("Out of stock.Increment Failed");
+                        }
+                        else 
+                        {
+                              $('.total').html(response.status);
+                        }
+                        
                         //console.log(response.status);
                         }
                   });
+
+            });
       </script>
 
 
@@ -909,16 +926,24 @@ Route::middleware('auth')->group(function() {
         if(Cart::where('id',$cart_id)->exists())
         {
             $cart=Cart::where('id',$cart_id)->first();
-            $cart->prod_qty=$prod_qty;
-            $cart->update();
- 
-            $cart2=Cart::where('user_id',Auth::id())->get();
-            $total=0;
-            foreach($cart2 as $item)
+            if(($cart->product->qty) >= ($prod_qty))
             {
-                 $total+=($item->product->selling_price)*($item->prod_qty);
-            } 
-            return response()->json(['status'=>$total]);
+                $cart->prod_qty=$prod_qty;
+                $cart->update();
+     
+                $cart2=Cart::where('user_id',Auth::id())->get();
+                $total=0;
+                foreach($cart2 as $item)
+                {
+                     $total+=($item->product->selling_price)*($item->prod_qty);
+                } 
+                return response()->json(['status'=>$total]);
+            }
+            else
+            {
+                return response()->json(['status'=>'out_of_stock']);
+            }
+
         }
     }
 
@@ -953,7 +978,210 @@ Route::middleware('auth')->group(function() {
     }
 
 
-   lay:
+   layout:next point
+
+
+30.placeorder:
+
+   php artisan make:model Order -m
+
+   migration:
+      $table->integer('user_id');
+      $table->string('fname');
+      $table->string('lname');
+      $table->string('email');
+      $table->string('phone');
+      $table->string('address1');
+      $table->string('address2')->default(null);
+      $table->string('city');
+      $table->string('state');
+      $table->string('country');
+      $table->string('pincode');
+      $table->tinyInteger('status')->default('0');
+      $table->string('message')->default(null)();
+      $table->string('tracking_no');  //randomely
+
+   model:
+      protected $table='orders';
+      protected $fillable=['user_id','fname','lname','email','phone','address1','address2','city','state','country','pincode','status','message','tracking_no'];
+
+
+   php artisan make:model OrderItem -m
+
+   migration:
+      $table->string('order_id');  //relation with Order>id
+      $table->string('prod_id');
+      $table->integer('qty');
+      $table->integer('price');
+  
+   model:
+      protected $table='order_items';
+      protected $fillable=['order_id','prod_id','price','qty'];
+ 
+   php artisan migrate    
+
+   web in auth:Route::get('/place-order','Frontend\CheckoutController@placeOrder');
+
+  
+   layout:
+
+<div class="container mt-5">
+   <form action="{{url('/place-order')}}" method="POST">
+      @csrf  
+      <div class="row">
+            <div class="col-md-5">
+                  <div class="card">
+                        <div class="card-body">
+                              <h6>Basic Details</h6>
+                              <hr>
+                              <div class="row checkout-form">
+                                    <div class="col-md-6">
+                                          <label for="">First Name</label>
+                                          <input required type="text" name="fname" value="{{Auth::user()->fname}}" class="form-control" placeholder="Enter First Name">
+                                    </div>
+                                    <div class="col-md-6">
+                                          <label for="">Last Name</label>
+                                          <input required type="text" name="lname" value="{{Auth::user()->lname}}" class="form-control" placeholder="Enter Last Name">
+                                    </div>
+                                    <div class="col-md-6 mt-3">
+                                          <label for="">Email</label>
+                                          <input required type="email" name="email" value="{{Auth::user()->email}}" class="form-control" placeholder="Enter Email">
+                                    </div>
+                                    <div class="col-md-6 mt-3">
+                                          <label for="">Phone number</label>
+                                          <input required type="text" name="phone" value="{{Auth::user()->phone}}" class="form-control" placeholder="Enter Phone Number">
+                                    </div>
+                                    <div class="col-md-6 mt-3">
+                                          <label for="">Address 1</label>
+                                          <input required type="text" name="address1" value="{{Auth::user()->address1}}" class="form-control" placeholder="Enter Address 1">
+                                    </div>
+                                    <div class="col-md-6 mt-3">
+                                          <label for="">Address 2</label>
+                                          <input type="text" name="address2" value="{{Auth::user()->address2}}" class="form-control" placeholder="Enter Address 2">
+                                    </div>
+                                    <div class="col-md-6 mt-3">
+                                          <label for="">City</label>
+                                          <input required type="text" name="city" value="{{Auth::user()->city}}" class="form-control" placeholder="Enter City">
+                                    </div>
+                                    <div class="col-md-6 mt-3">
+                                          <label for="">State</label>
+                                          <input required type="text" name="state" value="{{Auth::user()->state}}" class="form-control" placeholder="Enter State">
+                                    </div>
+                                    <div class="col-md-6 mt-3">
+                                          <label for="">Country</label>
+                                          <input required type="text" name="country" value="{{Auth::user()->country}}" class="form-control" placeholder="Enter Country">
+                                    </div>
+                                    <div class="col-md-6 mt-3">
+                                          <label for="">Pin Code</label>
+                                          <input required type="password" name="pincode" value="{{Auth::user()->pincode}}" class="form-control" placeholder="Enter Pin Code">
+                                    </div>
+                              </div>
+                        </div>
+                  </div>
+            </div>
+            <div class="col-md-7">
+                  <div class="card">
+                        <div class="card-body">
+                              Order Details
+                              <hr>
+                              <table class="table table-striped table-bordered">
+                                    <thead>
+                                          <tr>
+                                                <th>Name</th>
+                                                <th>Qty</th>
+                                                <th>Price</th>
+                                          </tr>
+                                    </thead>
+                                    <tbody>
+                                          @php $total=0; @endphp
+                                          @foreach ($cartitems as $item)
+                                              <tr>
+                                                    <td>{{$item->product->name}}</td>
+                                                    <td>{{$item->prod_qty}}</td>
+                                                    <td>{{$item->product->selling_price}}</td>
+                                              </tr>
+                                          @php $total+=($item->product->selling_price)*($item->prod_qty); @endphp    
+                                          @endforeach
+                                    </tbody>
+                              </table>
+                              <h6>Total : Rs {{$total}}</h6>
+                              <hr>
+                              <button type="submit " class="btn btn-primary w-100">Place Order</button>
+                        </div>
+                  </div>
+            </div>
+      </div> 
+   </form>   
+</div>
+
+
+
+   cont:
+
+    public function placeOrder(Request $request)
+    {
+
+         if(!Cart::where('user_id',Auth::id())->exists())
+         {
+            return redirect('/')->with('status','Add Product to Cart first!');
+         }
+
+         $order=new Order();
+         $order->user_id = Auth::id();
+         $order->fname = $request->input('fname');
+         $order->lname = $request->input('lname');
+         $order->email = $request->input('email');
+         $order->phone = $request->input('phone');
+         $order->address1 = $request->input('address1');
+         $order->address2 = $request->input('address2');
+         $order->city = $request->input('city');
+         $order->state = $request->input('state');
+         $order->country = $request->input('country');
+         $order->pincode = $request->input('pincode');
+         $order->tracking_no = 'asad'.rand(1111,9999);
+         $order->save();
+
+         $cartitems=Cart::where('user_id',Auth::id())->get();
+         foreach($cartitems as $item)
+         {
+             OrderItem::create([
+                 'order_id'=>$order->id,
+                 'prod_id'=>$item->prod_id,
+                 'qty'=>$item->prod_qty,
+                 'price'=>$item->product->selling_price,
+             ]);
+
+             //reducing quantity
+             $prod=Product::where('id',$item->prod_id)->first();
+             $prod->qty=$prod->qty - $item->prod_qty;
+             $prod->update();
+         }   
+         
+         
+         if(Auth::user()->address1==NULL)
+         {
+             $user=User::where('id',Auth::id())->first();
+             $user->fname = $request->input('fname');
+             $user->lname = $request->input('lname');
+             $user->phone = $request->input('phone');
+             $user->address1 = $request->input('address1');
+             $user->address2 = $request->input('address2');
+             $user->city = $request->input('city');
+             $user->state = $request->input('state');
+             $user->country = $request->input('country');
+             $user->pincode = $request->input('pincode');
+             $user->update();
+         }
+
+         $cartitems=Cart::where('user_id',Auth::id())->get();
+         Cart::destroy($cartitems);
+
+         return redirect('/')->with('status','Order Placed Successfully');
+         
+    }
+
+
+   
 
 
 
