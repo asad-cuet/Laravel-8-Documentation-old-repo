@@ -908,6 +908,9 @@ Route::middleware('auth')->group(function() {
                         success:function(response) {
                         if(response.status=='out_of_stock')
                         {
+                              var val=$('.qty-input').val();
+                              val--;
+                              $('.qty-input').val(val);
                               swal("Out of stock.Increment Failed");
                         }
                         else 
@@ -1015,6 +1018,14 @@ Route::middleware('auth')->group(function() {
    model:
       protected $table='orders';
       protected $fillable=['user_id','fname','lname','email','phone','address1','address2','city','state','country','pincode','totoal_price','status','message','tracking_no'];
+      public function orderItem()  //making relationship
+      {
+         return $this->hasMany(Orderitem::class);
+      }
+
+
+
+
 
 
    php artisan make:model OrderItem -m
@@ -1028,6 +1039,10 @@ Route::middleware('auth')->group(function() {
    model:
       protected $table='order_items';
       protected $fillable=['order_id','prod_id','price','qty'];
+    public function product()  //making relationship
+    {
+         return $this->belongsTo(Product::class,'prod_id','id');
+    }  
  
    php artisan migrate    
 
@@ -1202,7 +1217,739 @@ Route::middleware('auth')->group(function() {
 
    
 
+31.Show order history in frontend:
+
+     php artisan make:controller Frontend/UserController 
+
+     new:views/user/my-order.blade.php & view-order.blade.php
+
+     web:Route::get('/my-orders','Frontend\UserController@index');
+
+     cont:
+
+    public function index()
+    {
+        $my_order=Order::where('user_id',Auth::id())->orderBy('id','DESC')->get();
+        return view('frontend.order.my-order',['my_order'=>$my_order]); 
+    }
+
+    add on navbar
 
 
+    my-order:
+
+      <div class="row">
+            <div class="col-md-12">
+                  <div class="card">
+                        <div class="card-header">
+                           <h4>My Orders</h4>
+                        </div>
+                        <div class="card-body">
+                                    <table class="table table-bordered">
+                                          <thead>
+                                                <tr>
+                                                      <th>Tracking Number</th>
+                                                      <th>Total Price</th>
+                                                      <th>Status</th>
+                                                      <th>Action</th>
+                                                </tr>
+                                          </thead>
+                                          <tbody>
+                                                @foreach ($my_order as $item)
+                                                    <tr>
+                                                          <td>{{$item->tracking_no}}</td>
+                                                          <td>{{$item->total_price}}</td>
+                                                          <td>{{$item->status==0 ? 'Pending':'Completed'}}</td>
+                                                          <td>
+                                                                <a href="{{url('/view-order/'.$item->id)}}" class="btn btn-primary">View</a>
+                                                          </td>
+                                                      </tr>          
+                                                @endforeach
+                                          </tbody>
+                                    </table>
+                        </div>
+                  </div>
+
+            </div>
+      </div>
+
+
+32.View Order Details:
+
+     view-order:
+
+<div class="container py-5">
+      
+      <div class="row">
+            <div class="col-md-12">
+                  <div class="card">
+                        <div class="card-header">
+                           <h4>Order View
+                                 <a href="{{url('my-orders')}}" class="btn btn-warning text-white float-end">Back</a>
+                           </h4>
+                        </div>
+                        <div class="card-body">
+                              <div class="row">
+                                    <div class="col-md-6">
+                                          <h4>Shopping Details</h4>
+                                          <hr>
+                                              <label for="">First Name</label>
+                                              <div class="border p-2">{{$order->fname}}</div>
+                                              <label for="">Last Name</label>
+                                              <div class="border p-2">{{$order->lname}}</div>
+                                              <label for="">Email</label>
+                                              <div class="border p-2">{{$order->email}}</div>
+                                              <label for="">Contact No.</label>
+                                              <div class="border p-2">{{$order->phone}}</div>
+                                              <label for="">Shipping Address</label>
+                                              <div class="border p-2">{{$order->address1.','.$order->address2.','.$order->city.','.$order->state.','.$order->country}}</div>
+                                              <label for="">Zip Code.</label>
+                                              <div class="border">{{$order->pincode}}</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                          <h4>Order Details</h4>
+                                          <hr>
+                                          <div style="overflow-x:auto;">
+                                          <table class="table table-bordered">
+                                                <thead>
+                                                      <tr>
+                                                            <th>Name</th>
+                                                            <th>Quantity</th>
+                                                            <th>Price</th>
+                                                            <th>Image</th>
+                                                      </tr>
+                                                </thead>
+                                                <tbody>
+                                                      @foreach ($order->orderItem as $item)
+                                                          <tr>
+                                                                <td>{{$item->product->name}}</td>
+                                                                <td>{{$item->qty}}</td>
+                                                                <td>{{$item->price}}</td>
+                                                                <td>
+                                                                      <img src="{{asset('assets/uploads/product/'.$item->product->image)}}" width="50px" alt="Product Image">
+                                                                </td>
+                                                            </tr>          
+                                                      @endforeach
+                                                </tbody>
+                                          </table>
+                                          </div>
+                                          <h4 class="px-2">Grand Total:<span class="float-end">Rs {{$order->total_price}}</span></h4>
+                                    </div>
+                              </div>
+
+                        </div>
+                  </div>
+
+            </div>
+      </div>
+</div>
+
+
+     web:Route::get('/view-order/{order_id}','Frontend\UserController@view_order');
+
+
+
+    cont:
+
+
+    public function view_order($order_id)
+    {
+        $order=Order::where('id',$order_id)->where('user_id',Auth::id())->first();
+        return view('frontend.order.view-order',['order'=>$order]);
+    }
+
+
+33.Show order+view in admin panel:
+
+     add butoon on sidebar
+
+     new:views/admin/order/order.blade.php
+
+     php artisan make:controller Admin/OrderController
+
+     web in auth,isAdmin:Route::get('/orders','Admin\OrderController@index');
+
+     cont:
+    public function index()
+    {
+        $order=Order::where('status',0)->orderBy('id','DESC')->get();
+        return view('admin.order.order',['order'=>$order,'status'=>0]);
+    }
+
+    layout:    
+<div class="container">
+      <div class="row">
+            <div class="col-md-12">
+                  <div class="card">
+                        <div class="card-header bg-primary">
+                              <h4 class="text-white">
+                                    @if($status==0)
+                                    New Orders
+                                    <a href="{{url('/order-history')}}" class="btn btn-warning text-white float-right">Order History</a>
+                                    @elseif($status==1)
+                                    Order History
+                                    <a href="{{url('/orders')}}" class="btn btn-warning text-white float-right">New Orders</a>
+                                    @endif
+                              </h4>
+                        </div>
+                        <div class="card-body">
+                              <table class="table table-bordered">
+                                    <thead>
+                                          <tr>
+                                                <th>Order Date</th>
+                                                <th>Tracking Number</th>
+                                                <th>Total Price</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                          </tr>
+                                    </thead>
+                                    <tbody>
+                                          @foreach ($order as $item)
+                                              <tr>
+                                                    <td>{{date('d-m-Y',strtotime($item->created_at))}}</td>
+                                                    <td>{{$item->tracking_no}}</td>
+                                                    <td>{{$item->total_price}}</td>
+                                                    <td>{{$item->status==0 ? 'Pending':'Completed'}}</td>
+                                                    <td>
+                                                          <a href="{{url('/admin/view-order/'.$item->id)}}" class="btn btn-primary">View</a>
+                                                    </td>
+                                                </tr>          
+                                          @endforeach
+                                    </tbody>
+                              </table>
+                  </div>
+                  </div>
+            </div>
+      </div>
+</div>
+
+
+**** view:
+
+     new:views/admin/order/view-order.blade.php
+
+    web:Route::get('/admin/view-order/{order_id}','Admin\OrderController@view_order');
+
+
+    cont:
+    public function view_order($order_id)
+    {
+        $order=Order::where('id',$order_id)->first();
+        return view('admin.order.view-order',['order'=>$order]);
+    }
+
+    layout:
+<div class="container">
+      
+      <div class="row">
+            <div class="col-md-12">
+                  <div class="card">
+                        <div class="card-header">
+                           <h4>Order View
+                                 @if($order->status==0)
+                                 <a href="{{url('/orders')}}" class="btn btn-warning text-white float-right">Back</a>
+                                 @elseif($order->status==1)
+                                 <a href="{{url('/order-history')}}" class="btn btn-warning text-white float-right">Back</a>
+                                 @endif
+                           </h4>
+                        </div>
+                        <div class="card-body">
+                              <div class="row">
+                                    <div class="col-md-6">
+                                          <h4>Shopping Details</h4>
+                                          <hr>
+                                              <label for="">First Name</label>
+                                              <div class="border p-2">{{$order->fname}}</div>
+                                              <label for="">Last Name</label>
+                                              <div class="border p-2">{{$order->lname}}</div>
+                                              <label for="">Email</label>
+                                              <div class="border p-2">{{$order->email}}</div>
+                                              <label for="">Contact No.</label>
+                                              <div class="border p-2">{{$order->phone}}</div>
+                                              <label for="">Shipping Address</label>
+                                              <div class="border p-2">{{$order->address1.','.$order->address2.','.$order->city.','.$order->state.','.$order->country}}</div>
+                                              <label for="">Zip Code.</label>
+                                              <div class="border">{{$order->pincode}}</div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                          <h4>Order Details</h4>
+                                          <hr>
+                                          <div style="overflow-x:auto;">
+                                          <table class="table table-bordered">
+                                                <thead>
+                                                      <tr>
+                                                            <th>Name</th>
+                                                            <th>Quantity</th>
+                                                            <th>Price</th>
+                                                            <th>Image</th>
+                                                      </tr>
+                                                </thead>
+                                                <tbody>
+                                                      @foreach ($order->orderItem as $item)
+                                                          <tr>
+                                                                <td>{{$item->product->name}}</td>
+                                                                <td>{{$item->qty}}</td>
+                                                                <td>{{$item->price}}</td>
+                                                                <td>
+                                                                      <img src="{{asset('assets/uploads/product/'.$item->product->image)}}" width="50px" alt="Product Image">
+                                                                </td>
+                                                            </tr>          
+                                                      @endforeach
+                                                </tbody>
+                                          </table>
+                                          </div>
+                                          <h4 class="px-2">Grand Total:<span class="float-end">Rs {{$order->total_price}}</span></h4>
+                                          <div class="mt-3 px-2">
+                                                <label for="" class="">Order Status</label>
+                                                <form action="{{url('/update-order/'.$order->id)}}" method="POST">
+                                                      @csrf
+                                                      @method('PUT')
+                                                            <select class="form-select form-control border" name="order_status">
+                                                            <option {{$order->status==0? 'selected':''}} value="0">Pending</option>
+                                                            <option {{$order->status==1? 'selected':''}} value="1">Completed</option>
+                                                            </select>
+                                                            <button type="submit" class="btn btn-primary mt-3 float-end">Update</button>
+                                                </form>
+                                                
+                                          </div>
+                                          
+                                    </div>
+                              </div>
+
+                        </div>
+                  </div>
+
+            </div>
+      </div>
+</div>
+
+
+**** update order in view:
+
+     web: Route::put('/update-order/{order_id}','Admin\OrderController@update_order');                               
+
+
+    cont:
+    public function update_order(Request $request,$order_id)
+    {
+        $order=Order::find($order_id);
+        $order->status=$request->input('order_status');
+        $order->update();
+        return redirect('orders')->with('status','Order Status Updated Successfully');
+    }
+
+
+**** completed order:
+
+    button in order page added before
+
+   web:Route::get('/order-history','Admin\OrderController@order_history'); 
+
+
+   cont:
+    public function order_history()
+    {
+        $order=Order::where('status',1)->orderBy('id','DESC')->get();
+        return view('admin.order.order',['order'=>$order,'status'=>1]);
+    }
+
+
+
+
+34.Show Registrate User+View
+
+   php artisan make:controller Admin/UserController
+
+
+   new:views/admin/users/users.blade.php
+
+   Add button on sidebar
+
+
+   web:Route::get('/users','Admin\UserController@index'); 
+
+   cont:
+    public function index()
+    {
+        $users=User::orderBy('id','DESC')->get();
+        return view('admin.users.users',['users'=>$users]);
+    }
+
+
+   layout:
+<div class="card">
+      <div class="card-header bg-primary text-white">
+                  <h4>Registered Users</h4>
+      </div>
+
+      <div class="card-body">
+             <table class="table">
+                   <thead>
+                         <tr>
+                               <th>Id</th>
+                               <th>Name</th>
+                               <th>Email</th>
+                               <th>Phone</th>
+                               <th>Action</th>
+                         </tr>
+                  </thead>
+                  <tbody>
+                        @foreach ($users as $item)
+                        <tr>
+                              <td>{{$item->id}}</td>              
+                              <td>{{$item->name}}</td> 
+                              <td>{{$item->email}}</td>             
+                              <td>{{$item->phone}}</td>             
+                              <td>
+                                    <a href="{{url('view-user/'.$item->id)}}" class="btn btn-primary">View</a>
+                              </td>              
+                        </tr>
+                        @endforeach
+
+                  </tbody>
+            </table>                                
+      </div>
+</div>
+
+
+**** view:
+
+
+   web:Route::get('/view-user/{user_id}','Admin\UserController@view_user');
+
+  cont:
+    public function view_user($user_id)
+    {
+        $user=User::find($user_id);
+        return view('admin.users.view-user',['user'=>$user]);
+    }
+
+   layout:
+<div class="container py-5">
+      
+      <div class="row">
+            <div class="col-md-12">
+                  <div class="card">
+                        <div class="card-header">
+                           <h4>User Details
+                                 <a href="{{url('users')}}" class="btn btn-warning text-white float-right">Back</a>
+                           </h4>
+                        </div>
+                        <div class="card-body">
+                              <div class="row">
+                                    <div class="col-md-4 mt-3">
+                                          <label for="">Role</label>
+                                              <div class="border p-2">{{$user->role_as==0 ? 'User':'Admin'}}</div>
+                                    </div>
+                                    <div class="col-md-4 mt-3">
+                                          <label for="">First Name</label>
+                                              <div class="border p-2">{{$user->fname}}</div>
+                                    </div>
+                                    <div class="col-md-4 mt-3">
+                                          <label for="">Last Name</label>
+                                              <div class="border p-2">{{$user->lname}}</div>
+                                    </div>
+                                    <div class="col-md-4 mt-3"><label for="">Email</label>
+                                          <div class="border p-2">{{$user->email}}</div></div>
+                                    <div class="col-md-4 mt-3"><label for="">Phone</label>
+                                          <div class="border p-2">{{$user->phone}}</div></div>
+                                    <div class="col-md-4 mt-3">
+                                          <label for="">Address 1</label>
+                                              <div class="border p-2">{{$user->address1}}</div>
+                                    </div>
+                                    <div class="col-md-4 mt-3">
+                                          <label for="">Address 1</label>
+                                              <div class="border p-2">{{$user->address2}}</div>
+                                    </div>
+                                    <div class="col-md-4 mt-3">
+                                          <label for="">City</label>
+                                              <div class="border">{{$user->city}}</div>
+                                    </div>
+                                    <div class="col-md-4 mt-3">
+                                          <label for="">State.</label>
+                                              <div class="border">{{$user->state}}</div>
+                                    </div>
+                                    <div class="col-md-4 mt-3">
+                                          <label for="">Country</label>
+                                              <div class="border">{{$user->country}}</div>
+                                    </div>
+                                    <div class="col-md-4 mt-3">
+                                          <label for="">Pin Code</label>
+                                          <div class="border">{{$user->pincode}}</div>
+                                    </div>                                 
+
+                              </div>
+
+                        </div>
+                  </div>
+
+            </div>
+      </div>
+</div>
+
+
+
+
+35.Add to wishlist:
+
+    php artisan make:model Wishlist -m
+
+    migration:
+       $table->integer('user_id');
+       $table->integer('prod_id');
+
+    model:
+      protected $table='wishlists';
+      protected $fillable=['user_id','prod_id'];
+    public function product()  //making relationship
+    {
+         return $this->belongsTo(Product::class,'prod_id','id');
+    }  
+
+
+    php artisan migrate
+
+
+
+    php artisan make:controller Frontend/WishlistController
+
+
+    new:views/frontend/wishlist/wishlist.blade.php
+
+    add button on navbar dropdown
+
+
+    web in auth:Route::get('/wishlist','Frontend\WishlistController@index');
+
+    layout:
+<div class="container my-5">
+      <div class="card shadow">
+            @if($wishlist->count()>0)
+            <div class="card-body">
+                 
+                  @foreach ($wishlist as $item)
+                  <div class="row product_data">
+     
+                        <div class="col-md-2 my-auto">
+                              <img src="{{asset('assets/uploads/product/'.$item->product->image)}}" height="70px" width="70px" alt="Image">
+                        </div>
+                        <div class="col-md-2 my-auto">
+                            <h6>{{$item->product->name}}</h6>
+                        </div>
+                        <div class="col-md-2 my-auto">
+                            <h6>Rs {{$item->product->selling_price}}</h6>
+                        </div>
+                        <div class="col-md-2 my-auto">
+                              <input type="hidden" value="{{$item->product->id}}" class="prod_id">
+                              <input type="hidden" value="{{$item->id}}" class="wish_id">
+                        @if($item->product->qty>0)
+                              <label class="badge bg-success">In stock</label>
+                              @else       
+                              <label class="badge bg-danger">Out of stock</label> 
+                        @endif
+                        </div>
+                        <div class="col-md-2 my-auto">
+                              <input type="hidden" name="quantity" value="1" class="form-control qty-input text-center" />
+                              <button class="btn btn-success addToCartBtn"><i class="fa fa-shopping-cart"></i>Add to Cart</button>
+                        </div>
+                        <div class="col-md-2 my-auto">
+                              <button class="btn btn-danger delete-wishlist-item"><i class="fa fa-trash"></i>Remove</button>
+                        </div>
+                         
+                  </div>
+                 
+                  
+                  @endforeach
+            </div>
+
+            @else
+            <div class="card-body text-center">
+                  <h2>Your <i class="fa fa-shopping-cart"> Wishlist is empty</i></h2>
+                  <a href="{{url('/category')}}" class="btn btn-outline-primary float-end">Continue Shoppinh</a>
+            </div>
+            @endif
+      </div>
+</div>
+
+
+*** active wishlist button in view-product page:
+
+
+    <button type="button" class="btn btn-success addToWishlist me-3 float-start">Add to Wishlist <i class="fa fa-heart"></i></button>
+
+
+   <script>
+
+            $('.addToWishlist').click(function(e){
+               e.preventDefault();
+               var product_id=$(this).closest('.product_data').find('.prod_id').val();
+               
+      
+
+               $.ajax({
+                     method:"POST",
+                     url:"/add-to-wishlist",
+                     data:{
+                           'prod_id':product_id                     },
+                     success:function(response) {
+                          swal(response.status);  
+                     }
+               });
+            });
+
+   </script>
+
+
+  web:Route::post('/add-to-wishlist','Frontend\WishlistController@add_to_wishlist');
+
+
+
+   cont:
+
+    public function add_to_wishlist(Request $request)
+    {
+        if(Auth::check())
+        {
+            $prod_id=$request->input('prod_id');
+            if(Product::find($prod_id))
+            {
+                if(!Wishlist::where('user_id',Auth::id())->where('prod_id',$prod_id)->exists())
+                {
+                    $wish=new Wishlist();
+                    $wish->prod_id=$prod_id;
+                    $wish->user_id=Auth::id();
+                    $wish->save();
+                    return response()->json(['status'=>"Product Added to Wishlist"]);
+                }
+                else
+                {
+                    return response()->json(['status'=>"Product has already added"]);
+                }
+
+
+            }
+            else
+            {
+                return response()->json(['status'=>"Product doesn't exist"]);
+            }
+        }
+        else
+        {
+            return response()->json(['status'=>"Login to Continue"]);
+        }
+    }
+
+
+*** add to cart:
+    button added in layout
+
+
+   script:same as add to cart
+
+
+
+*** remove from wishlist:
+
+   button added in layout
+
+   script:
+            $('.delete-wishlist-item').click(function(e){
+                  e.preventDefault();
+
+                  var wish_id=$(this).closest('.product_data').find('.wish_id').val();
+
+
+
+
+                  $.ajax({
+                        method:"POST",
+                        url:"/delete-wishlist-item",
+                        data:{
+                              'wish_id':wish_id
+                        },
+                        success:function(response) {
+                        swal("",response.status, "success");
+                        }
+                  });
+
+            });
+
+
+
+     web: Route::post('/delete-wishlist-item','Frontend\WishlistController@delete_wishlist_item');
+
+
+    cont:
+    public function delete_wishlist_item(Request $request)
+    {
+        $wish_id=$request->input('wish_id');
+        $wishItem=Wishlist::where('id',$wish_id)->first();
+        $wishItem->delete();
+        return response()->json(['status'=>'Product Deleted Successfully']);
+    }
+
+
+
+36.Add Quantity on Cart,wishlist button in nav:
+
+   layout:
+            <li class="nav-item">
+              <a class="nav-link {{Request::is('cart') ? 'active':'' }}" href="{{url('/cart')}}"><i class="fa fa-shopping-cart"></i> Cart
+              <span class="badge badge-pill bg-primary cart-count">0</span>
+              </a>
+            </li>
+            
+
+            <li class="nav-item">
+              <a class="nav-link {{Request::is('wishlist') ? 'active':'' }}" href="{{url('/wishlist')}}"><i class="fa fa-wish-list"></i> Wishlist
+                <span class="badge badge-pill bg-success wish-count">0</span>
+              </a>
+            </li>
+
+   script:
+         function loadcart()
+         {
+               $.ajax({
+                    method:"GET",
+                    url:"/load-cart-data",
+                    success:function(response)
+                    {
+                         //alert(response.count);
+                         //$('.cart-count').html(''); 
+                         $('.cart-count').html(response.cartcount); 
+                         $('.wish-count').html(response.wishcount); 
+                    }
+               });
+         }
+         loadcart();
+
+    call this on :addToCart,delete-cart-item,addToWishlist,delete-wishlist-item
+
+     
+    web:Route::get('/load-cart-data','Frontend\CartController@load_cart_data');
+
+
+   cont:
+    public function load_cart_data()
+    {
+        if(Auth::check())
+        {
+            $cartcount=Cart::where('user_id',Auth::id())->count();
+            $wishcount=Wishlist::where('user_id',Auth::id())->count();
+            return response()->json(['cartcount'=>$cartcount,'wishcount'=>$wishcount]);
+        }
+
+    }
+
+
+
+
+
+
+
+
+    
 
 
