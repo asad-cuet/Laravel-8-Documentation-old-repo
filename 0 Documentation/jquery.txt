@@ -1,0 +1,9 @@
+1.How to reload a div tag:
+           $('.cartitems').load(location.href+" .cartitems");    //alert:space before .cartitems  
+
+
+2.For calling a js function again & again:
+
+      $(document).on('click','.delete-cart-item',function(e){
+                  e.preventDefault();
+      });

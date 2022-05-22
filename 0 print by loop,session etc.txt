@@ -89,3 +89,6 @@ or:
 
 Include in blade: 
         @include('name')    // here name from name.blade.php                   
+
+
+date format in blade:date('d-m-Y',strtotime($item->created_at))}}

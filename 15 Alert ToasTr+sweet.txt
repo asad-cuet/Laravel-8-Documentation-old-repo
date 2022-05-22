@@ -41,3 +41,19 @@ copy all the links in body:
          swal("Great Job!","{!! Session::get('added') !!}","success",{ button:"OK", })
     </script>
 @endif
+
+
+or,
+
+
+ @if(session('status'))
+        <script>
+         swal("{{ session('status') }}");
+        </script>    
+  @endif  
+
+
+* ajax response format:
+               swal(responsec.status).then((value)=>{
+                    window.location.href="/my-orders"; 
+                  });  

@@ -1132,6 +1132,7 @@ Route::middleware('auth')->group(function() {
                               </table>
                               <h6>Total : Rs {{$total}}</h6>
                               <hr>
+                              <input type="hidden" name="payment_mode" value="COD">
                               <button type="submit " class="btn btn-primary w-100">Place Order</button>
                         </div>
                   </div>
@@ -1947,7 +1948,339 @@ Route::middleware('auth')->group(function() {
 
 
 
+37.Checkout validation with js:
 
+     new:public/js/checkout.js
+
+
+     include js file in front layout
+
+     add button to process
+     take input and validate by checkout.js,
+     then pass to php,
+     calculate total_price,
+     back all again
+     
+
+
+     go to:razorpay.com>resource>develper-docs>
+     web-integration:manual checkout with handler function>
+     follow the step
+
+     step:
+        add button://we already added
+        copy script lint in js section in checkout page
+        copy script code inside response function
+        remove failed code,click function[start-end] because we already added
+        paste key id
+        edit:amount,name,description:thank you
+         
+        erase handler except payment_id
+        edit:prefill
+        remove notes
+        half-done,you can see payment modal
+        after success payment you need to store data in db--
+        write ajax inside handler beloy the payment_id
+
+
+     as:
+var options = {
+                              "key": "rzp_test_XRpVzatl7Qgfl7", // Enter the Key ID generated from the Dashboard
+                              "amount": response.total_price*100, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                              "currency": "INR",
+                              "name": response.fname+' '+response.lname,
+                              "description": "Thank you for chosing us",
+                              "image": "https://example.com/your_logo",
+                             // "order_id": "order_9A33XWu170gUtm", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+                              "handler": function (response){
+                                  alert(response.razorpay_payment_id);
+                                  $.ajax({
+                                        method:"POST",
+                                        url:"/place-order",
+                                        data:{
+                                          'fname':response.fname,
+                                          'lname':response.lname,
+                                          'email':response.email,
+                                          'phone':response.phone,
+                                          'address1':response.address1,
+                                          'address2':response.address2,
+                                          'city':response.city,
+                                          'state':response.state,
+                                          'country':response.country,
+                                          'payment_mode  ':"Paid by Razorpay",
+                                          'payment_id':response.razorpay_payment_id 
+                                        },
+                                        success:function(response)
+                                        {
+                                                                     
+                                        }
+                                    });
+                              },
+                              "prefill": {
+                                  "name": response.fname+' '+response.lname,
+                                  "email": response.email,
+                                  "contact": response.phone
+                              },
+                              "theme": {
+                                  "color": "#3399cc"
+                              }
+                          };
+                          var rzp1 = new Razorpay(options);
+
+                              rzp1.open();
+                          
+                    }
+                  
+
+
+
+    add in order migration:
+      $table->string('payment_mode')->default(null);
+      $table->string('payment_id')->default(null);
+
+
+    edit checkout.blade.php above place order button:
+         <input type="hidden" name="payment_mode" value="COD">
+
+    edit placeorder controller method:
+      add in input section:
+         $order->payment_mode=$request->input('payment_mode');
+         $order->payment_id=$request->input('payment_id');
+      
+
+
+    
+     
+35.Paypal added
+
+
+
+36.Product Rating:
+
+
+    php artisan make:model Rating -m
+
+   
+    model:
+       protected $table='ratings';
+       protected $fillable=['user_id','prod_id','stars_rated'];
+
+    migration:
+        $table->integer('user_id');
+        $table->integer('prod_id');
+        $table->integer('stars_rated');
+
+   migrate now;
+
+
+    php artisan make:controller Frontend/RatingController
+
+
+
+    web:
+     Route inside auth::get('/add-rating','Frontend/RatingController@add_rating');
+
+
+
+    view-product.blade.php:
+      add layout inside modal:
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{url('/add-rating')}}" method="POST">
+            @csrf
+            <input type="hidden" name="product_id" value="{{$product->id}}">
+                  <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Rate {{$product->name}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body"> 
+
+
+                                     <div class="rating-css">
+                                          <div class="star-icon">
+                                                @if($user_rating)
+                                                      @for($i=1;$i<=$user_rating->stars_rated;$i++)
+                                                            <input type="radio" value="{{$i}}" name="product_rating" checked id="rating{{$i}}">
+                                                            <label for="rating{{$i}}" class="fa fa-star"></label>
+                                                      @endfor
+                                                      @for($j=$user_rating->stars_rated+1;$j<=5;$j++)
+                                                      <input type="radio" value="{{$j}}" name="product_rating" id="rating{{$j}}">
+                                                      <label for="rating{{$j}}" class="fa fa-star"></label>
+                                                      @endfor
+                                                @else
+                                                      <input type="radio" value="1" name="product_rating" id="rating1">
+                                                      <label for="rating1" class="fa fa-star"></label>
+                                                      <input type="radio" value="2" name="product_rating" id="rating2">
+                                                      <label for="rating2" class="fa fa-star"></label>
+                                                      <input type="radio" value="3" name="product_rating" id="rating3">
+                                                      <label for="rating3" class="fa fa-star"></label>
+                                                      <input type="radio" value="4" name="product_rating" id="rating4">
+                                                      <label for="rating4" class="fa fa-star"></label>
+                                                      <input type="radio" value="5" name="product_rating" id="rating5">
+                                                      <label for="rating5" class="fa fa-star"></label>
+                                                @endif
+
+
+                                          </div>
+                                    </div>
+                                    
+                                    
+
+                  </div>
+                  <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                  </div>
+          </form>
+        </div>
+      </div>
+</div>
+
+
+      paste this below price:
+                              @php $ratenum=number_format($rating_value) @endphp
+                              <div class="rating">
+                                    @for($i=1;$i<=$ratenum;$i++)
+                                         <i class="fa fa-star checked"></i>
+                                    @endfor
+                                    @for($j=$ratenum+1;$j<=5;$j++)
+                                         <i class="fa fa-star"></i>
+                                    @endfor
+                                    
+                                    <span>
+                                        @if($rating->count()>0)  
+                                          {{$rating->count()}}  Ratings
+                                        @else
+                                          No Ratings
+                                        @endif  
+                                    </span>
+
+                              </div>
+
+
+     modal button:
+                                    <!-- Button trigger modal -->
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                          Rate this Product
+                                    </button>
+
+
+     add css code in custome.css:
+/* rating */
+.rating-css div {
+    color: #ffe400;
+    font-size: 30px;
+    font-family: sans-serif;
+    font-weight: 800;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 20px 0;
+  }
+  .rating-css input {
+    display: none;
+  }
+  .rating-css input + label {
+    font-size: 60px;
+    text-shadow: 1px 1px 0 #8f8420;
+    cursor: pointer;
+  }
+  .rating-css input:checked + label ~ label {
+    color: #b4afaf;
+  }
+  .rating-css label:active {
+    transform: scale(0.8);
+    transition: 0.3s ease;
+       }  
+
+    .checked{
+          color:#ffd900;
+    }
+
+/* End of Star Rating */
+
+
+    link css code in frontend.blade.php
+
+
+      cont:
+    public function add_rating(Request $request)
+    {
+        $stars_rated=$request->input('product_rating');
+        $product_id=$request->input('product_id');
+
+        $product_check=Product::where('id',$product_id)->first();
+        if($product_check)
+        {
+              $verified_purchase=Order::where('orders.user_id',Auth::id())
+                                        ->join('order_items','orders.id','order_items.order_id')
+                                        ->where('order_items.prod_id',$product_id)->get();
+
+              if($verified_purchase->count()>0)
+              {
+                  $existing_rating=Rating::where('user_id',Auth::id())->where('prod_id',$product_id)->first();
+                  if($existing_rating)
+                  {
+                       $existing_rating->stars_rated=$stars_rated;
+                       $existing_rating->update();
+                  }
+                  else
+                  {
+                    Rating::create([
+                        'user_id'=>Auth::id(),
+                        'prod_id'=>$product_id,
+                        'stars_rated'=>$stars_rated,
+                    ]);
+                  }
+                  return redirect()->back()->with('status',"Thank you for Rating this product");
+                    
+              }   
+              else
+              {
+                  return redirect()->back()->with('status',"You can't rate this product without purchase");
+              }                       
+        }
+        else
+        {
+               return redirect()->back()->with('status',"The link you followed was broken");
+        }
+    }
+
+
+
+
+    updated view_product():
+    public function view_product($cate_slug,$prod_slug)
+    {
+        if(Category::where('slug',$cate_slug)->exists())
+        {
+            if(Product::where('slug',$prod_slug)->exists())
+            {
+                $product=Product::where('slug',$prod_slug)->first();
+                $rating=Rating::where('prod_id',$product->id)->get();
+                $rating_sum=Rating::where('prod_id',$product->id)->sum('stars_rated');
+                $user_rating=Rating::where('prod_id',$product->id)->where('user_id',Auth::id())->first();
+                if($rating->count()>0)
+                {
+                    $rating_value=$rating_sum/$rating->count();
+                }
+                else
+                {
+                    $rating_value=0;
+                }
+                
+                return view('frontend/view-product',['product'=>$product,'rating'=>$rating,'rating_value'=>$rating_value,'user_rating'=>$user_rating]);
+            }
+            else
+            {
+                return view('frontend/view-product')->with('status','No such product found');
+            }
+        }
+        else
+        {
+        return view('frontend/view-product')->with('status','No such Category found');
+        }
+    }
 
 
     
