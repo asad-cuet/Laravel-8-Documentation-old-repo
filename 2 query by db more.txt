@@ -149,3 +149,11 @@ Update query:
 Delete query:
         $delete=DB::table('student')->where('id','3')->delete(); 
         $update_all=DB::table('student')->truncate(); //delete all rows of this table 
+
+
+
+Left Join:
+
+        $verified_purchase=Order::where('orders.user_id',Auth::id())
+                                        ->join('order_items','orders.id','order_items.order_id')
+                                        ->where('order_items.prod_id',$product_id)->get();

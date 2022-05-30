@@ -29,3 +29,6 @@ copy all the links in body:
                   selector:'#myMce'
                          });
          </script>
+
+
+print data in html: echo html_entity_decode($data);

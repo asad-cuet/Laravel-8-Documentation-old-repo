@@ -1963,7 +1963,7 @@ Route::middleware('auth')->group(function() {
      
 
 
-     go to:razorpay.com>resource>develper-docs>
+     go to:razorpay.com>resource>develper-docs>   [pass:your common]
      web-integration:manual checkout with handler function>
      follow the step
 

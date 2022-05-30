@@ -77,7 +77,7 @@
 
 
 Extra:
-https://www.sandbox.paypal.com/cy/signin
+https://www.sandbox.paypal.com/cy/signin  [asadul77330@gmail.com..pass:your common Asad]
 sendbox account:
 personal:
 sb-hmdrt16530767@personal.example.com
