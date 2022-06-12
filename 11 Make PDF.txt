@@ -20,7 +20,7 @@
    method(){
 
         $data=Model::all();
-        $pdf=PDF::loadView('pdf',['data'=>$data]);
+        $pdf=PDF::loadView('pdf',['data'=>$data])->setOptions(['defaultFont' => 'sans-serif']);
         return $pdf->download('set-name.pdf');
 
          }

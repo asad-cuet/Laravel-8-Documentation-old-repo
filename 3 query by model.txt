@@ -28,6 +28,11 @@ use App\Models\Model-name;
                                     }
 
                  //for Button in blade just write code anywhere: {{$students->links()}}
+                 <style>
+               nav svg {
+                        height:20px;
+                       }
+                 </style>
 
 
 
