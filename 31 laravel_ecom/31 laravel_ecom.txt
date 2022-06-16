@@ -1,4 +1,4 @@
-1.create new project    //out-topic kill port cmd command:npx kill-port 3306.kill app:tasklist>Taskkill /PID 4132 /F
+1.create new project    //out-topic: kill port cmd command:npx kill-port 3306.kill app:tasklist>Taskkill /PID 4132 /F
 
 2.connect database
 
