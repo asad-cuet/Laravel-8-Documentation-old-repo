@@ -1,0 +1,7 @@
+1.Download php installation file
+
+2.Paste file C:/Programe file
+
+3.go > Edit system variaable > Environment Variable > System Variable :: path > new path > paste php path
+
+4.Done
