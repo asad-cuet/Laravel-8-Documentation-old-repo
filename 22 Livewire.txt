@@ -127,3 +127,16 @@ use App\Http\Livewire\Name;
    {
     $this->sum=$this->num1+$this->num2;
    }
+
+
+=============================================
+============================================
+
+Undo Livewire:
+
+
+php artisan livewire:delete foo
+# Removes Foo.php & foo.blade.php
+ 
+php artisan livewire:delete foo --force
+# Removes without confirmation prompt
