@@ -1,14 +1,17 @@
 *Run:php artisan make:mail Testmail
 
 *.env:  
-   MAIL_HOST=smtp.googlemail.com
-   MAIL_PORT=465
-   MAIL_USERNAME=email_address
-   MAIL_PASSWORD=*****
-   MAIL_ENCRYPTION=ssl
-   MAIL_FROM_ADDRESS=same_email_address
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=465
+MAIL_USERNAME=mytest7733@gmail.com
+MAIL_PASSWORD=usebgmoufkielrrn
+MAIL_ENCRYPTION=ssl
+MAIL_FROM_ADDRESS=mytest7733@gmail.com
+MAIL_FROM_NAME="${APP_NAME}"
 
-* Go to google account>Security>Turn on 'Less secure app access'
+* Go to google account>Security>Turn on 2 step verification >
+* Go to google account>Security> app password > create new app > copy the password > paste in MAIL_PASSWORD
 
 ***Controller.php:
 
