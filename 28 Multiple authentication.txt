@@ -1,3 +1,10 @@
+Supprted version:
+Version	Laravel Version
+1.x	5.8, 6.x
+2.x	7.x
+3.x	8.x
+4.x	9.x
+
 1.Project create:
 
     laravel new project-name 
@@ -7,11 +14,11 @@
 
 3.login peckage installation:[user authentication]
 
-   composer require laravel/ui
+   composer require laravel/ui   // or: composer require laravel/ui:^3.2.0
 
-   php artisan ui bootstrap --auth
+   php artisan ui bootstrap --auth     // if vue: php artisan ui vue --auth // if react: php artisan ui react --auth // if without auth: rn without '--auth'
 
-   npm install && npm run dev  //if error,run again
+   npm install && npm run dev  //run twice.if error,run again
 
    php artisan migrate
 
@@ -21,7 +28,7 @@
 
               ,A route on web.php
 
-Note:Done!You can register and login now
+Note:Half Done!You can register and login now
 
 4.Run again: [admin authentication]
 
@@ -169,7 +176,7 @@ use Auth;
 
      if(!Auth::guard('admin')->check())
      {
-        return redirect('/admin/login');  //if loggeed in
+        return redirect('/admin/login');  //if not loggeed in
       }
 
 
@@ -251,7 +258,7 @@ use Auth;
 
          if(Auth::guard('admin')->check())
         {
-           return redirect('/admin/dashboard');  //if not loggeed in
+           return redirect('/admin/dashboard');  //if  loggeed in
         }
 kernel.php:
 
@@ -269,6 +276,17 @@ Route::group(['middleware'=>'adminLoginGuard'],function(){
 
 
 Note:All done!
+
+
+
+//Custom authentication:
+
+Auth::routes([
+    'register' => false, // Registration Routes is off now...
+    'reset' => false, // Password Reset Routes...
+    'verify' => false, // Email Verification Routes...
+  ]);
+// Auth::routes();
 
 
 

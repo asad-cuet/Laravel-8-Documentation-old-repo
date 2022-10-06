@@ -112,3 +112,35 @@ Route::get('/delete-student/{id}',[StudentController::class,'destroy'])->name('d
 
 */
 
+
+Image update with extension:
+
+          if($request->hasfile('logo'))       
+          {
+
+               
+               $file=$request->file('logo');
+               $extention=$file->getClientOriginalExtension();  
+               if(array_search($extention,['jpg','png','jprg','gif']))
+               {
+                    $filename=time().'.'.$extention;
+                    $file->move('assets/admin/uploaded_logo',$filename);  
+                    $input_data['logo']=$filename;
+                    if($file)
+                    {
+                         $old_logo=CompanyInfo::where('id',1)->first()->logo;
+                         $old_image='assets/admin/uploaded_logo/'.$old_logo;
+                         if(File::exists($old_image))
+                         {
+                              File::delete($old_image);
+                         }
+                    }
+
+               }
+               else
+               {
+                    return back()->with('success', $extention.' file is not allowed');
+               }
+               
+          }
+

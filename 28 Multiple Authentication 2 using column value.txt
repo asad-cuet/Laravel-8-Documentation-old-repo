@@ -72,7 +72,7 @@
     }
 
 
-     import Auth class [click>right-button,import class]
+   //  import Auth class  [click>right-button,import class]
 
 
 10.web.php:
