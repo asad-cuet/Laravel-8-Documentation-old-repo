@@ -93,3 +93,8 @@ Include in blade:
 
 
 date format in blade:date('d-m-Y',strtotime($item->created_at))}}
+
+
+
+get url:
+{{Request::is('dashboard') ? 'active':'' }}

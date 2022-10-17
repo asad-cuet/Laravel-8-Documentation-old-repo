@@ -139,7 +139,7 @@ Image update with extension:
                }
                else
                {
-                    return back()->with('success', $extention.' file is not allowed');
+                    return back()->with('status', $extention.' file is not allowed');
                }
                
           }
