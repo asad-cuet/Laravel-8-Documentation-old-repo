@@ -3,6 +3,7 @@ Creation of project     :[composer create-project laravel/laravel:^8.0 laravel8_
 Creation of model       :[php artisan make:model model-name]
 Creation of controller  :[php artisan make:controller controller-name -r]
 Creation of Migration   :[php artisan make:migration a-name]
+Undo last migration     :[php artisan migrate:rollback --step=1]
 How to migrate          :[php artisan migrate]
 
 Reading table & passing data:
